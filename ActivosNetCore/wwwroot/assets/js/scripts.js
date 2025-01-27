@@ -29,8 +29,6 @@
 
     });
 
-
-
     /*  
     -----------------
     Chat Sidebar
@@ -55,40 +53,6 @@
         var toggle = open ? closeSidebar : openSidebar;
         toggle();
     });
-
-
-
-
-
-
-
-
-    /*  Auto date in footer and refresh
-    --------------------------------------*/
-
-    document.getElementById("date-time").innerHTML = Date();
-
-    $('.page-refresh').on("click", function() {
-        location.reload();
-    });
-
-
-    /* TO DO LIST 
-    --------------------*/
-    $(".tdl-new").on('keypress', function(e) {
-        var code = (e.keyCode ? e.keyCode : e.which);
-        if (code == 13) {
-            var v = $(this).val();
-            var s = v.replace(/ +?/g, '');
-            if (s == "") {
-                return false;
-            } else {
-                $(".tdl-content ul").append("<li><label><input type='checkbox'><i></i><span>" + v + "</span><a href='#' class='ti-close'></a></label></li>");
-                $(this).val("");
-            }
-        }
-    });
-
 
     $(".tdl-content a").on("click", function() {
         var _li = $(this).parent().parent("li");
@@ -132,25 +96,6 @@
         $("input:checkbox").prop('checked', $(this).prop("checked"));
     });
 
-
-    /*  Vertical Carousel
-    ---------------------------*/
-
-    $('#verticalCarousel').carousel({
-        interval: 2000
-    })
-
-    $(window).bind("resize", function() {
-        console.log($(this).width())
-        if ($(this).width() < 680) {
-            $('.logo').addClass('hidden')
-            $('.sidebar').removeClass('sidebar-shrink')
-            $('.sidebar').removeClass('sidebar-shrink, sidebar-gestures')
-        }
-    }).trigger('resize');
-
-
-
     /*  Search
     ------------*/
     $('a[href="#search"]').on('click', function(event) {
@@ -171,17 +116,6 @@
                 event.preventDefault();
                 return false;
             })
-
-    
-
-    /*  pace Loader
-    -------------*/
-
-    paceOptions = {
-        elements: true
-    };
-
-
 
 
 })(jQuery);

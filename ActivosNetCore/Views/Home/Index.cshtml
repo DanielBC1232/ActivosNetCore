@@ -1,1 +1,88 @@
-﻿
+﻿<link rel="stylesheet" href="~/vendor/select2/css/select2.min.css">
+
+
+<div class="content-wrap mt-3 p-3">
+    <div class="main">
+        <div class="container-fluid">
+            <div class="row">
+                @*CONTENIDO **************************************@
+
+                <div class="col-12">
+                    <div class="card">
+
+
+                        <div class="card-body">
+                            <div class="table-responsive">
+
+                                <div class="row d-flex">
+                                    <div class="col-2 my-3">
+                                        <span><p class="card-title">Departamento:</p></span>
+                                        <select id="single-select">
+                                            <option value="TI">Tecnologias de Informacion</option>
+                                            <option value="CO">Contaduria</option>
+                                            <option value="HU">Recursos Humanos</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3 col-2 align-self-end p-5">
+                                        <input type="text" class="form-control" placeholder="Buscar">
+                                    </div>
+                                </div>
+
+                                <hr class="my-3">
+                                <table id="activosTable" class="table table-hover table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Placa</th>
+                                            <th>Departamento</th>
+                                            <th>Responsable</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <tr>
+                                            <td>123JSFY</td>
+                                            <td>Tecnologias de Infromacion</td>
+                                            <td>Daniel Barquero Cabrera</td>
+                                            <th><button class="btn btn-primary text-white btn-rounded">Detalles</button></th>
+                                        </tr>
+                                        <tr>
+                                            <td>[placa]</td>
+                                            <td>[Departamento]</td>
+                                            <td>[Nombre Apellido Apellido]</td>
+                                            <th><button class="btn btn-primary text-white btn-rounded">Detalles</button></th>
+
+                                        </tr>
+                                        <tr>
+                                            <td>[placa]</td>
+                                            <td>[Departamento]</td>
+                                            <td>[Nombre Apellido Apellido]</td>
+                                            <th><button class="btn btn-primary text-white btn-rounded">Detalles</button></th>
+
+                                        </tr>
+
+                                    </tbody>
+
+                                    <tfoot>
+                                        <tr>
+                                            <th>Placa</th>
+                                            <th>Departamento</th>
+                                            <th>Responsable</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Datatable -->
+
+<script src="~/vendor/select2/js/select2.full.min.js"></script>
+<script src="~/js/plugins-init/select2-init.js"></script>
