@@ -2,53 +2,41 @@
     Layout = "~/Views/Shared/_LayoutExterno.cshtml";
 }
 
-<body class="h-100" style="margin-top:10%">
-    <div class="authincation h-100">
-        <div class="container-fluid h-100">
-            <div class="row justify-content-center h-100 align-items-center">
-                <div class="col-md-6">
-                    <div class="authincation-content">
-                        <div class="row no-gutters">
-                            <div class="col-xl-12">
-                                <div class="auth-form">
-                                    <h4 class="text-center mb-4">Iniciar sesión con mi cuenta</h4>
-                                    <form action="index.html">
-                                        <div class="form-group">
-                                            <label><strong>Correo electrónico</strong></label>
-                                            <input type="email" class="form-control" value="hello@example.com">
-                                        </div>
-                                        <div class="form-group">
-                                            <label><strong>Contraseña</strong></label>
-                                            <input type="password" class="form-control" value="Password">
-                                        </div>
-                                        <div class="form-row d-flex justify-content-between mt-4 mb-2">
-                                            <div class="form-group">
-                                                <div class="form-check ml-2">
-                                                    <input class="form-check-input" type="checkbox" id="basic_checkbox_1">
-                                                    <label class="form-check-label" for="basic_checkbox_1">Recuerdame</label>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <a href="page-forgot-password.html">Olvidaste la constraseña?</a>
-                                            </div>
-                                        </div>
-                                        <div class="text-center">
-                                            <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
-                                        </div>
-                                    </form>
-                                    <div class="new-account mt-3">
-                                        <p>No tienen una cuenta? <a class="text-primary" href="./page-register.html">Registrate aquí</a></p>
-                                    </div>
+<div class="authincation h-100 d-flex align-items-center justify-content-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="authincation-content p-4 shadow rounded">
+                    <div class="auth-form">
+                        <h4 class="text-center mb-4">Iniciar sesión con mi cuenta</h4>
+                        <form method="post">
+                            <div class="mb-3">
+                                <label class="form-label"><strong>Correo electrónico</strong></label>
+                                <input type="email" class="form-control" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label"><strong>Contraseña</strong></label>
+                                <input type="password" class="form-control" name="password" required>
+                            </div>
+                            <div class="d-flex justify-content-between mt-3 mb-3">
+                                <div class="form-check ms-2">
+                                    <input class="form-check-input" type="checkbox" id="basic_checkbox_1">
+                                    <label class="form-check-label" for="basic_checkbox_1">Recuérdame</label>
+                                </div>
+                                <div>
+                                    <a href="page-forgot-password.html" class="text-decoration-none">¿Olvidaste la contraseña?</a>
                                 </div>
                             </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+                            </div>
+                        </form>
+                        <div class="text-center mt-3">
+                            <p>¿No tienes una cuenta? <a class="text-primary text-decoration-none" href="./page-register.html">Regístrate aquí</a></p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-
-
-
-</body>
+</div>

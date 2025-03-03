@@ -1,4 +1,4 @@
-﻿<link rel="stylesheet" href="~/vendor/select2/css/select2.min.css">
+﻿
 
 
 <div class="content-wrap mt-3 p-3">
@@ -14,20 +14,21 @@
                         <div class="card-body">
                             <div class="table-responsive">
 
-                                <div class="row d-flex">
+                                <div class="row d-flex align-items-center">
                                     <div class="col-2 my-3">
-                                        <span><p class="card-title">Departamento:</p></span>
-                                        <select id="single-select">
-                                            <option value="TI">Tecnologias de Informacion</option>
-                                            <option value="CO">Contaduria</option>
+                                        <p class="card-title">Departamento:</p>
+                                        <select id="single-select" class="form-select">
+                                            <option value="TI">Tecnologías de Información</option>
+                                            <option value="CO">Contaduría</option>
                                             <option value="HU">Recursos Humanos</option>
                                         </select>
                                     </div>
 
-                                    <div class="mb-3 col-2 align-self-end p-5">
+                                    <div class="col-2 mb-3 align-self-end p-0">
                                         <input type="text" class="form-control" placeholder="Buscar">
                                     </div>
                                 </div>
+
 
                                 <hr class="my-3">
                                 <table id="activosTable" class="table table-hover table-striped">
@@ -83,6 +84,5 @@
 
 
 <!-- Datatable -->
-
 <script src="~/vendor/select2/js/select2.full.min.js"></script>
 <script src="~/js/plugins-init/select2-init.js"></script>

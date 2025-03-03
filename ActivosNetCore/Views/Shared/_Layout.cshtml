@@ -1,74 +1,72 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Home</title>
+    <title>Gestor de Activos</title>
 
-    <!-- Styles -->
-    <link href="~/assets/css/lib/calendar2/semantic.ui.min.css" rel="stylesheet">
-    <link href="~/assets/css/lib/calendar2/pignose.calendar.min.css" rel="stylesheet">
+    <!-- Estilos -->
+    <link href="~/assets/css/lib/bootstrap.min.css" rel="stylesheet">
     <link href="~/assets/css/lib/font-awesome.min.css" rel="stylesheet">
     <link href="~/assets/css/lib/themify-icons.css" rel="stylesheet">
-    <link href="~/assets/css/lib/weather-icons.css" rel="stylesheet" />
+    <link href="~/assets/css/lib/weather-icons.css" rel="stylesheet">
     <link href="~/assets/css/lib/menubar/sidebar.css" rel="stylesheet">
-    <link href="~/assets/css/lib/bootstrap.min.css" rel="stylesheet">
     <link href="~/assets/css/lib/helper.css" rel="stylesheet">
     <link href="~/assets/css/style.css" rel="stylesheet">
-
-    <link href="~/vendor/datatables/css/jquery.datatables.min.css" rel="stylesheet" />
-    <link href="~/css/style.css" rel="stylesheet">
-
+    <link href="~/assets/css/lib/data-table/dataTables.bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/vendor/select2/css/select2.min.css">
+    <link href="~/css/style.css" rel="stylesheet" />
 </head>
-<body>
-    <script src="~/assets/js/lib/jquery.min.js"></script>
 
-    <div class="sidebar sidebar-hide-to-small sidebar-shrink sidebar-gestures">
+<body class="h-100">
+    <script src="assets/js/lib/jquery.min.js"></script>
+    <!-- Barra Lateral -->
+    <div class="sidebar sidebar-hide-to-small sidebar-shrink sidebar-gestures" style="min-width: 200px; min-height: 100vh">
         <div class="nano">
             <div class="nano-content">
                 <ul>
                     <div class="logo"><a href="#"><span>Gestor Activos</span></a></div>
-
                     <hr>
                     <li class="label">Principal</li>
-                    <li><a class="#"><i class="ti-view-list-alt"></i>Lista de Activos </a></li>
+                    <li><a href="#"><i class="ti-view-list-alt"></i>Lista de Activos</a></li>
                     <li><a href="#"><i class="ti-plus"></i>Agregar Activo</a></li>
-
                     <hr>
                     <li class="label">Responsables</li>
                     <li><a href="#"><i class="ti-user"></i>Lista de Responsables</a></li>
                     <li><a href="#"><i class="ti-plus"></i>Agregar Responsable</a></li>
-
                     <hr>
                     <li class="label">Historial</li>
                     <li><a href="#"><i class="ti-align-left"></i>Historial de Activos</a></li>
                     <li><a href="#"><i class="ti-align-left"></i>Historial de Mantenimiento</a></li>
                     <li><a href="#"><i class="ti-align-left"></i>Historial de Responsables</a></li>
-
                     <hr>
                     <li class="label">Administrador</li>
                     <li><a href="#"><i class="ti-key"></i>Gestionar Permisos</a></li>
-
                     <hr>
-                    <li><a><i class="ti-close"></i> Logout</a></li>
+                    <li><a href="#"><i class="ti-close"></i> Logout</a></li>
                 </ul>
             </div>
         </div>
     </div>
 
-    @RenderBody()
+    <!-- Contenido Principal -->
+    <div class="main-content" style="margin-inline-start: 240px">
+        @RenderBody()
+    </div>
 
+    <!-- Scripts -->
+    
+    <script src="assets/js/lib/jquery.nanoscroller.min.js"></script>
+    <script src="assets/js/scripts.js"></script>
+    
+    <!-- nano scroller -->
 
-    <!-- jquery sidebar -->
-    <script src="~/assets/js/lib/jquery.nanoscroller.min.js"></script>
-    <script src="~/assets/js/lib/menubar/sidebar.js"></script>
-    <script src="~/assets/js/scripts.js"></script>
-
+    <!-- sidebar -->
+    <!-- bootstrap -->
 
 
 
 </body>
-
 </html>
