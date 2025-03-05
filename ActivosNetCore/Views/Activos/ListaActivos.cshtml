@@ -1,4 +1,6 @@
-﻿<div class="content-wrap mt-3 p-3">
+﻿@model IEnumerable<ActivosModel>
+
+<div class="content-wrap mt-3 p-3">
     <div class="main">
         <div class="container-fluid">
             <div class="row">
@@ -7,57 +9,70 @@
                 <div class="col-12">
                     <div class="card">
 
-                        <div class="card-body">
-                            <div class="table-responsive">
+                        <form asp-action="ListaActivos" asp-controller="Activos" method="get">
 
-                                <div class="row d-flex align-items-center">
-                                    <div class="col-2 my-3">
-                                        <p class="card-title">Departamento:</p>
-                                        <select id="single-select" class="form-select">
-                                            <option value="1">Tecnologías de Información</option>
-                                            <option value="2">Recursos Humanos</option>
-                                        </select>
-                                    </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
 
-                                    <div class="col-2 mb-3 align-self-end p-0">
-                                        <input type="text" class="form-control" placeholder="Buscar">
+                                    <div class="row d-flex align-items-center">
+                                        <div class="col-3 my-3">
+                                            <p class="card-title">Departamento:</p>
+                                            <select name="idDepartamento" class="form-select" onchange="this.form.submit()">
+                                                <option value="">Seleccionar</option>
+                                                <option value="1">Tecnologías de Información</option>
+                                                <option value="2">Recursos Humanos</option>
+                                            </select>
+                                        </div>
                                     </div>
+                                    @if (Model.Any())
+                                    {
+                                        @foreach (var activo in Model)
+                                        {
+                                            <hr class="my-3">
+
+                                            <hr class="my-3">
+                                            <table id="activosTable" class="table table-hover table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Nombre del activo</th>
+                                                        <th>Placa</th>
+                                                        <th>Departamento</th>
+                                                        <th>Responsable</th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+
+                                                <tbody>
+                                                    <tr>
+                                                        <td>@activo.nombreActivo</td>
+                                                        <td>@activo.placa</td>
+                                                        <td>@activo.nombreDepartamento</td>
+                                                        <td>@activo.nombreResponsable</td>
+                                                        <th><button class="btn btn-primary text-white btn-rounded">Detalles</button></th>
+                                                    </tr>
+
+                                                </tbody>
+
+                                                <tfoot>
+                                                    <tr>
+                                                        <th>Nombre del activo</th>
+                                                        <th>Placa</th>
+                                                        <th>Departamento</th>
+                                                        <th>Responsable</th>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="card bg-warning text-white">
+                                            <div class="card-body py-0 pt-2"><H4 class="text-white">Sin Resultados</H4></div>
+                                        </div>
+                                    }
                                 </div>
-
-                                <hr class="my-3">
-                                <table id="activosTable" class="table table-hover table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Nombre del activo</th>
-                                            <th>Placa</th>
-                                            <th>Departamento</th>
-                                            <th>Responsable</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        <tr>
-                                            <td>[nombre]</td>
-                                            <td>123JSFY</td>
-                                            <td>Tecnologias de Infromacion</td>
-                                            <td>Daniel Barquero Cabrera</td>
-                                            <th><button class="btn btn-primary text-white btn-rounded">Detalles</button></th>
-                                        </tr>
-
-                                    </tbody>
-
-                                    <tfoot>
-                                        <tr>
-                                            <th>Nombre del activo</th>
-                                            <th>Placa</th>
-                                            <th>Departamento</th>
-                                            <th>Responsable</th>
-                                        </tr>
-                                    </tfoot>
-                                </table>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
