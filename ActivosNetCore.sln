@@ -5,6 +5,8 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActivosNetCore", "ActivosNetCore\ActivosNetCore.csproj", "{3CFBA261-A5FF-4E74-89BA-D6D359E6B009}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActivosAPI", "ActivosAPI\ActivosAPI.csproj", "{D2701C03-A5A0-43A4-A126-8F42D27924D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{3CFBA261-A5FF-4E74-89BA-D6D359E6B009}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3CFBA261-A5FF-4E74-89BA-D6D359E6B009}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3CFBA261-A5FF-4E74-89BA-D6D359E6B009}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2701C03-A5A0-43A4-A126-8F42D27924D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2701C03-A5A0-43A4-A126-8F42D27924D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2701C03-A5A0-43A4-A126-8F42D27924D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2701C03-A5A0-43A4-A126-8F42D27924D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
