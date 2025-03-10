@@ -1,0 +1,53 @@
+﻿@model ActivosModel;
+
+<div class="content-wrap mt-5 p-3">
+    <div class="main">
+        <div class="container-fluid overflow-hidden">
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="card-header bg-secondary"><h3 class="text-white">Detalles</h3></div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <div class="row g-5 p-3">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nombre de activo:</label>
+                                            <input asp-for="nombreActivo" type="text" class="form-control" value="" readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Serie:</label>
+                                            <input type="text" class="form-control" value="" readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Responsable:</label>
+                                            <input type="text" class="form-control" value="" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 d-flex flex-column">
+                                        <div class="mb-3">
+                                            <label class="form-label">Placa:</label>
+                                            <input type="text" class="form-control" value="" readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Descripción:</label>
+                                            <input type="text" class="form-control" value="" readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Departamento:</label>
+                                            <input type="text" class="form-control" value="" readonly />
+                                        </div>
+                                        <div class="d-grid gap-5 align-self-end mt-3">
+                                            <button type="button" class="btn btn-dark" id="btnEliminar">Eliminar</button>
+                                            <button type="submit" class="btn btn-secondary text-white" asp-controller="Activos" asp-action="EditarActivo">Editar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

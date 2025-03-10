@@ -18,10 +18,11 @@
     <link href="~/assets/css/lib/data-table/dataTables.bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="~/vendor/select2/css/select2.min.css">
     <link href="~/css/style.css" rel="stylesheet" />
+
 </head>
 
 <body class="h-100">
-    <script src="~/assets/js/lib/jquery.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <!-- Barra Lateral -->
     <div class="sidebar sidebar-hide-to-small sidebar-shrink sidebar-gestures" style="min-width: 200px; min-height: 100vh">
         <div class="nano">
@@ -31,7 +32,7 @@
                     <hr>
                     <li class="label">Principal</li>
                     <li><a asp-controller="Activos" asp-action="ListaActivos"><i class="ti-view-list-alt"></i>Lista de Activos</a></li>
-                    <li><a href="#"><i class="ti-plus"></i>Agregar Activo</a></li>
+                    <li><a asp-controller="Activos" asp-action="AgregarActivo"><i class="ti-plus"></i>Agregar Activo</a></li>
                     <hr>
                     <li class="label">Responsables</li>
                     <li><a href="#"><i class="ti-user"></i>Lista de Responsables</a></li>
@@ -50,6 +51,12 @@
             </div>
         </div>
     </div>
+    <style>
+        .row {
+            overflow-x: hidden !important;
+            max-width: 100% !important;
+        }
+    </style>
 
     <!-- Contenido Principal -->
     <div class="main-content" style="margin-inline-start: 240px">
@@ -57,7 +64,8 @@
     </div>
 
     <!-- Scripts -->
-    
+    <script src="~/vendor/select2/js/select2.full.min.js"></script>
+    <script src="~/js/plugins-init/select2-init.js"></script>
     <script src="~/assets/js/lib/jquery.nanoscroller.min.js"></script>
     <script src="~/assets/js/scripts.js"></script>
 

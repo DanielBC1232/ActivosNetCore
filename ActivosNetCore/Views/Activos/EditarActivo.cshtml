@@ -1,0 +1,63 @@
+﻿@model ActivosModel;
+
+<div class="content-wrap mt-5 p-3">
+    <div class="main">
+        <div class="container-fluid overflow-hidden">
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="card-header bg-secondary"><h3 class="text-white">Editar Activo</h3></div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <form asp-action="AgregarActivo" asp-controller="Activos">
+                                    <div class="row g-5 p-3">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Nombre de activo:</label>
+                                                <input type="text" class="form-control">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Serie:</label>
+                                                <input type="text" class="form-control">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Responsable:</label>
+                                                <select id="select-responsable" class="form-control">
+                                                    <option value="">Seleccionar...</option>
+                                                    <option value="1">[Responsable 1]</option>
+                                                    <option value="2">[Responsable 2]</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 d-flex flex-column">
+                                            <div class="mb-3">
+                                                <label class="form-label">Placa:</label>
+                                                <input type="text" class="form-control">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Descripción:</label>
+                                                <input type="text" class="form-control">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Departamento:</label>
+                                                <select id="select-departamento" class="form-control">
+                                                    <option value="">Seleccionar...</option>
+                                                    <option value="1">Tecnologías de Información</option>
+                                                    <option value="2">Recursos Humanos</option>
+                                                </select>
+                                            </div>
+                                            <div class="d-flex align-self-end mt-2">
+                                                <button type="submit" class="btn btn-primary" asp-controller="Activos" asp-action="EditarActivo">Guardar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
