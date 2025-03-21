@@ -1,7 +1,12 @@
+using ActivosNetCore.Dependencias;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient();
 builder.Services.AddControllersWithViews();
+//builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUtilitarios, Utilitarios>();
+
 
 var app = builder.Build();
 

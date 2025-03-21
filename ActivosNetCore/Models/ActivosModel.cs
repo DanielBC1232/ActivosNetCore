@@ -4,7 +4,6 @@ namespace ActivosNetCore.Models
 {
     public class ActivosModel
     {
-
         public int? idActivo { get; set; }
 
         [Required(ErrorMessage = "El nombre del activo es obligatorio.")]
@@ -29,7 +28,7 @@ namespace ActivosNetCore.Models
 
         // FK //
         //Responsable
-        [Required(ErrorMessage = "La responsable es obligatorio.")]
+        [Required(ErrorMessage = "El responsable es obligatorio.")]
         [Range(1, int.MaxValue, ErrorMessage = "Seleccione un responsable valido.")]
         public int? idResponsable { get; set; }
         public string? nombreResponsable { get; set; }

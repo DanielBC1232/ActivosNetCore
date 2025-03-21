@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ActivosNetCore.Models;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using Microsoft.Data.SqlClient;
 using Dapper;
-using ActivosAPI.Models;
 using System.Data;
+using ActivosAPI.Models;
 
-namespace ActivosNetCore.Controllers
+namespace ActivosAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -45,25 +44,52 @@ namespace ActivosNetCore.Controllers
         }
 
         [HttpGet]
-        [Route("DetallesActivos")]
-        public IActionResult DetallesActivos(int? idActivo)
+        [Route("DetallesActivo")]
+        /*public IActionResult DetallesActivo(int? idActivo)
         {
+
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
-                var result = context.Query<ActivosModel>("SP_DetallesActivo",
-                    new { idActivo },
-                    commandType: CommandType.StoredProcedure).ToList();
+                var result = context.QueryFirstOrDefault<ActivosModel>(
+                    "SP_DetallesActivo",
+                    new { idActivo });
+                var respuesta = new RespuestaModel();
 
-                if (result.Any())
+                if (result != null)
                 {
-                    return Ok(result);
+                    respuesta.Indicador = true;
+                    respuesta.Mensaje = "Información consultada";
+                    respuesta.Datos = result;
                 }
                 else
                 {
-                    return NotFound(new { Indicador = false, Mensaje = "No hay datos disponibles" });
+                    respuesta.Indicador = false;
+                    respuesta.Mensaje = "Su información no se ha validado correctamente";
                 }
+                return Ok(respuesta.Datos);
             }
 
+        }*/
+        public async Task<IActionResult> DetallesActivo(int id)
+        {
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                string storedProcedure = "SP_DetallesActivo";
+                var parameters = new { idActivo = id };
+
+                var activo = await context.QueryFirstOrDefaultAsync<ActivosModel>(
+                    storedProcedure,
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                if (activo == null)
+                {
+                    return NotFound(new { message = "Activo no encontrado" });
+                }
+
+                return Ok(activo);
+            }
         }
 
         [HttpPost]
@@ -73,7 +99,7 @@ namespace ActivosNetCore.Controllers
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
                 var result = context.Execute("SP_AgregarActivo",
-                    new { model.nombreActivo, model.placa, model.serie, model.descripcion, model.idDepartamento, model.idResponsable});
+                    new { model.nombreActivo, model.placa, model.serie, model.descripcion, model.idDepartamento, model.idResponsable });
 
                 var respuesta = new RespuestaModel();
 
@@ -99,7 +125,7 @@ namespace ActivosNetCore.Controllers
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
                 var result = context.Execute("SP_EditarActivo",
-                    new { model.idActivo,model.nombreActivo, model.placa, model.serie, model.descripcion, model.idDepartamento, model.idResponsable });
+                    new { model.idActivo, model.nombreActivo, model.placa, model.serie, model.descripcion, model.idDepartamento, model.idResponsable });
 
                 var respuesta = new RespuestaModel();
 

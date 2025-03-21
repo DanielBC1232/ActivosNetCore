@@ -1,8 +1,7 @@
-﻿namespace ActivosNetCore.Models
+﻿namespace ActivosAPI.Models
 {
     public class ActivosModel
     {
-
         public int? idActivo { get; set; }
         public string? nombreActivo { get; set; }
         public string? placa { get; set; }

@@ -32,7 +32,6 @@
                                     </thead>
                                     <tbody></tbody>
                                 </table>
-
                             </div>
                         </div>
                     </div>
@@ -41,6 +40,8 @@
         </div>
     </div>
 </div>
+<a class="btn btn-primary m-5" href="@Url.Action("DetallesActivo", "Activos", new {Id = 2})">HREF</a>
+<a class="btn btn-primary m-5" href="Activos/DetallesActivo/2">HREF 2</a>
 
 <script>
     $(document).ready(function() {
@@ -62,6 +63,7 @@
                     if (response.length > 0) {
                         $('#noResults').addClass('d-none');
                         response.forEach(function(activo) {
+                            const detallesUrl = "@Url.Action("DetallesActivo", "Activos")" + "?Id=" + activo.idActivo;
                             tbody.append(`
                                 <tr>
                                     <td>${activo.nombreActivo}</td>
@@ -69,10 +71,9 @@
                                     <td>${activo.nombreDepartamento}</td>
                                     <td>${activo.nombreResponsable}</td>
                                     <td>
-                                <a class="btn btn-primary text-white btn-rounded"
-                                               href="/Activos/DetallesActivo?idActivo=${activo.idActivo}">
-                                                Detalles
-                                            </a>
+                                <a class="btn btn-primary text-white btn-rounded" href="${detallesUrl}">
+                            Detalles
+                        </a>
                                 </td>
                                 </tr>
                             `);

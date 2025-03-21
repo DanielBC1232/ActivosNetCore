@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ActivosNetCore.Models;
+using ActivosNetCore.Dependencias;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using System;
 using System.Reflection;
+using System.Text.Json;
+using ActivosNetCore.Models;
 
 namespace ActivosNetCore.Controllers
 {
@@ -11,11 +13,14 @@ namespace ActivosNetCore.Controllers
     {
         private readonly IHttpClientFactory _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly IUtilitarios _utilitarios;
 
-        public ActivosController(IHttpClientFactory httpClient, IConfiguration configuration)
+        public ActivosController(IHttpClientFactory httpClient, IConfiguration configuration, IUtilitarios utilitarios)
         {
             _httpClient = httpClient;
             _configuration = configuration;
+            _utilitarios = utilitarios;
+
         }
 
         //Listado de activos
@@ -46,6 +51,10 @@ namespace ActivosNetCore.Controllers
         [HttpPost]
         public IActionResult AgregarActivo(ActivosModel model)
         {
+            if (!ModelState.IsValid)//Evitar enviar campos vacios
+            {
+                return View();
+            }
             using (var api = _httpClient.CreateClient())
             {
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/AgregarActivo";
@@ -61,20 +70,16 @@ namespace ActivosNetCore.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> DetallesActivo(int idActivo)
+        public IActionResult DetallesActivo(int idActivo)
         {
-            using (var api = _httpClient.CreateClient())
-            {
-                var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/DetallesActivos/{idActivo}";
-                var result = await api.GetAsync(url);
+            var response = _utilitarios.ObtenerInfoActivo(idActivo) ?? new ActivosModel();
 
-                if (result.IsSuccessStatusCode)
-                {
-                    var activo = await result.Content.ReadFromJsonAsync<ActivosModel>();
-                    return View(activo);
-                }
-            };
-            return View(new ActivosModel());
+            if (response == null)
+            {
+                return NotFound("No se encontró el activo.");
+            }
+
+            return View(response);
         }
 
         [HttpGet]
