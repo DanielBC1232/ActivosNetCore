@@ -6,7 +6,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddControllersWithViews();
 //builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUtilitarios, Utilitarios>();
-
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -23,6 +23,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",

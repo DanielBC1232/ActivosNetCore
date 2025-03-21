@@ -30,6 +30,7 @@ namespace ActivosNetCore.Dependencias
 
                     if (result != null && result.Indicador)
                     {
+
                         return JsonSerializer.Deserialize<ActivosModel>((JsonElement)result.Datos!)!;
                     }
                 }

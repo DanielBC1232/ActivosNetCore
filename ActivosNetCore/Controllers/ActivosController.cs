@@ -83,9 +83,55 @@ namespace ActivosNetCore.Controllers
         }
 
         [HttpGet]
-        public IActionResult EditarActivo()
+        public IActionResult EditarActivo(int idActivo)
         {
-            return View();
+            var response = _utilitarios.ObtenerInfoActivo(idActivo) ?? new ActivosModel();
+
+            if (response == null)
+            {
+                return NotFound("No se encontró el activo.");
+            }
+
+            return View(response);
+        }
+
+        //Editar activo
+        [HttpPost]
+        public IActionResult EditarActivo(ActivosModel model)
+        {
+            if (!ModelState.IsValid)//Evitar enviar campos vacios
+            {
+                return View(model);
+            }
+            using (var api = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/EditarActivo";
+                var result = api.PutAsJsonAsync(url, model).Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("ListaActivos", "Activos");
+                }
+
+                return View();
+            }
+        }
+
+        [HttpPost]
+        public IActionResult EliminarActivo(ActivosModel model)
+        {
+            using (var api = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/EliminarActivo";
+                var result = api.PutAsJsonAsync(url, model).Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("ListaActivos", "Activos");
+                }
+                else
+                {
+                    return RedirectToAction("ListaActivos", "Activos");
+                }
+            }
         }
 
     }

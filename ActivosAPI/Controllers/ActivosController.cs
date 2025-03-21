@@ -45,38 +45,14 @@ namespace ActivosAPI.Controllers
 
         [HttpGet]
         [Route("DetallesActivo")]
-        /*public IActionResult DetallesActivo(int? idActivo)
-        {
-
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
-            {
-                var result = context.QueryFirstOrDefault<ActivosModel>(
-                    "SP_DetallesActivo",
-                    new { idActivo });
-                var respuesta = new RespuestaModel();
-
-                if (result != null)
-                {
-                    respuesta.Indicador = true;
-                    respuesta.Mensaje = "Información consultada";
-                    respuesta.Datos = result;
-                }
-                else
-                {
-                    respuesta.Indicador = false;
-                    respuesta.Mensaje = "Su información no se ha validado correctamente";
-                }
-                return Ok(respuesta.Datos);
-            }
-
-        }*/
-        public async Task<IActionResult> DetallesActivo(int id)
+        public async Task<IActionResult> DetallesActivo([FromQuery] int idActivo)
         {
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
                 string storedProcedure = "SP_DetallesActivo";
-                var parameters = new { idActivo = id };
+                var parameters = new { idActivo = idActivo };
 
+                // Esperar correctamente la tarea asincrónica
                 var activo = await context.QueryFirstOrDefaultAsync<ActivosModel>(
                     storedProcedure,
                     parameters,
@@ -88,7 +64,7 @@ namespace ActivosAPI.Controllers
                     return NotFound(new { message = "Activo no encontrado" });
                 }
 
-                return Ok(activo);
+                return Ok(new { Indicador = true, Mensaje = "Activo encontrado", Datos = activo });
             }
         }
 
@@ -118,7 +94,7 @@ namespace ActivosAPI.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("EditarActivo")]
         public IActionResult EditarActivo(ActivosModel model)
         {
@@ -133,18 +109,20 @@ namespace ActivosAPI.Controllers
                 {
                     respuesta.Indicador = true;
                     respuesta.Mensaje = "El activo se ha actualizado correctamente";
+                    return Ok(respuesta);
                 }
                 else
                 {
                     respuesta.Indicador = false;
-                    respuesta.Mensaje = "El activo no ha actualizado correctamente";
+                    respuesta.Mensaje = "El activo no ha actualizado";
+                    return StatusCode(500, respuesta);
+
                 }
 
-                return Ok(respuesta);
             }
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("EliminarActivo")]
         public IActionResult EliminarActivo(ActivosModel model)
         {
@@ -159,14 +137,15 @@ namespace ActivosAPI.Controllers
                 {
                     respuesta.Indicador = true;
                     respuesta.Mensaje = "El activo se ha desactivado correctamente";
+                    return Ok(respuesta);
                 }
                 else
                 {
                     respuesta.Indicador = false;
-                    respuesta.Mensaje = "El activo no ha desactivado correctamente";
+                    respuesta.Mensaje = "El activo no ha desactivado";
+                    return StatusCode(500, respuesta);
                 }
 
-                return Ok(respuesta);
             }
         }
 

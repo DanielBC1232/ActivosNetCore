@@ -1,4 +1,4 @@
-﻿@model ActivosModel;
+﻿@model ActivosNetCore.Models.ActivosModel;
 
 <div class="content-wrap mt-5 p-3">
     <div class="main">
@@ -12,34 +12,42 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Nombre del Activo:</label>
-                                        <input type="text" class="form-control" asp-for="nombreActivo" placeholder="Activo" readonly />
-                                        <h1 class="text-primary">@Model.nombreActivo</h1>
+                                        <input type="text" class="form-control" asp-for="nombreActivo" placeholder="" readonly />
+
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Serie:</label>
-                                        <input type="text" class="form-control" asp-for="serie" placeholder="Serie" readonly />
+                                        <input type="text" class="form-control" asp-for="serie" placeholder="" readonly />
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Responsable:</label>
-                                        <input type="text" class="form-control" asp-for="nombreResponsable" placeholder="Responsable" readonly />
+                                        <input type="text" class="form-control" asp-for="nombreResponsable" placeholder="" readonly />
                                     </div>
                                 </div>
                                 <div class="col-md-6 d-flex flex-column">
                                     <div class="mb-3">
                                         <label class="form-label">Placa:</label>
-                                        <input type="text" class="form-control" asp-for="placa" placeholder="Placa" readonly />
+                                        <input type="text" class="form-control" asp-for="placa" placeholder="" readonly />
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Descripción:</label>
-                                        <input type="text" class="form-control" asp-for="descripcion" placeholder="Descripcion" readonly />
+                                        <input type="text" class="form-control" asp-for="descripcion" placeholder="" readonly />
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Departamento:</label>
-                                        <input type="text" class="form-control" asp-for="nombreDepartamento" placeholder="Departamento" readonly />
+                                        <input type="text" class="form-control" asp-for="nombreDepartamento" placeholder="" readonly />
                                     </div>
-                                    <div class="d-grid gap-5 align-self-end mt-3">
-                                        <button type="button" class="btn btn-dark" id="btnEliminar">Eliminar</button>
-                                        <a type="button" class="btn btn-secondary text-white" href="@Url.Action("EditarActivo","Activos", new { IdActivo = Model.idActivo})">Editar</a>
+                                    <div class="d-grid gap-5 align-self-end mt-3 row">
+                                        <div class="col-6">
+                                            <form asp-action="EliminarActivo" asp-controller="Activos">
+                                                <input type="hidden" asp-for="idActivo">
+                                                <button type="submit" class="btn btn-dark" id="btnEliminar">Eliminar</button>
+                                            </form>
+                                        </div>
+                                        <div class="col-6">
+                                            <a type="button" class="btn btn-secondary text-white" href="@Url.Action("EditarActivo","Activos", new { idActivo = Model.idActivo})">Editar</a>
+
+                                        </div>
                                     </div>
 
                                 </div>
@@ -51,7 +59,16 @@
         </div>
     </div>
 </div>
-
+<script>
+    $("#btnEliminar").click(function (e) {
+        var confirmar = confirm("¿Estás seguro de que deseas eliminar este activo?");
+        if (confirmar) {
+            $("form").submit();
+        } else {
+            e.preventDefault();
+        }
+    });
+</script>
 
 
 

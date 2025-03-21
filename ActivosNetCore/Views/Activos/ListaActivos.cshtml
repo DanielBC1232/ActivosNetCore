@@ -40,9 +40,6 @@
         </div>
     </div>
 </div>
-<a class="btn btn-primary m-5" href="@Url.Action("DetallesActivo", "Activos", new {Id = 2})">HREF</a>
-<a class="btn btn-primary m-5" href="Activos/DetallesActivo/2">HREF 2</a>
-
 <script>
     $(document).ready(function() {
         $('#departamentoFilter').select2();
@@ -63,7 +60,7 @@
                     if (response.length > 0) {
                         $('#noResults').addClass('d-none');
                         response.forEach(function(activo) {
-                            const detallesUrl = "@Url.Action("DetallesActivo", "Activos")" + "?Id=" + activo.idActivo;
+                            const detallesUrl = "@Url.Action("DetallesActivo", "Activos")" + "?idActivo=" + activo.idActivo;
                             tbody.append(`
                                 <tr>
                                     <td>${activo.nombreActivo}</td>

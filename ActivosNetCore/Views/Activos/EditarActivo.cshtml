@@ -1,4 +1,4 @@
-﻿@model ActivosModel;
+﻿@model ActivosNetCore.Models.ActivosModel;
 
 <div class="content-wrap mt-5 p-3">
     <div class="main">
@@ -9,20 +9,21 @@
                     <div class="card shadow-sm">
                         <div class="card-body">
                             <div class="table-responsive">
-                                <form asp-action="AgregarActivo" asp-controller="Activos">
+                                <form asp-action="EditarActivo" asp-controller="Activos">
                                     <div class="row g-5 p-3">
                                         <div class="col-md-6">
+                                            <input type="hidden" asp-for="idActivo">
                                             <div class="mb-3">
                                                 <label class="form-label">Nombre de activo:</label>
-                                                <input type="text" class="form-control">
+                                                <input type="text" class="form-control" asp-for="nombreActivo">
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Serie:</label>
-                                                <input type="text" class="form-control">
+                                                <input type="text" class="form-control" asp-for="serie">
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Responsable:</label>
-                                                <select id="select-responsable" class="form-control">
+                                                <select id="select-responsable" class="form-control" asp-for="idResponsable">
                                                     <option value="">Seleccionar...</option>
                                                     <option value="1">[Responsable 1]</option>
                                                     <option value="2">[Responsable 2]</option>
@@ -33,15 +34,15 @@
                                         <div class="col-md-6 d-flex flex-column">
                                             <div class="mb-3">
                                                 <label class="form-label">Placa:</label>
-                                                <input type="text" class="form-control">
+                                                <input type="text" class="form-control" asp-for="placa">
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Descripción:</label>
-                                                <input type="text" class="form-control">
+                                                <input type="text" class="form-control" asp-for="descripcion">
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Departamento:</label>
-                                                <select id="select-departamento" class="form-control">
+                                                <select id="select-departamento" class="form-control" asp-for="idDepartamento">
                                                     <option value="">Seleccionar...</option>
                                                     <option value="1">Tecnologías de Información</option>
                                                     <option value="2">Recursos Humanos</option>
