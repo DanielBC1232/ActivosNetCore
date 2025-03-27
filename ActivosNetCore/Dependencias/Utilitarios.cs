@@ -38,5 +38,26 @@ namespace ActivosNetCore.Dependencias
             return null;
         }
 
+        public TicketModel? ObtenerInfoTicket(int idTicket)
+        {
+            using (var api = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlApi").Value + $"Ticket/DetallesTicket?idTicket=" + idTicket;
+                var response = api.GetAsync(url).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+                    if (result != null && result.Indicador)
+                    {
+
+                        return JsonSerializer.Deserialize<TicketModel>((JsonElement)result.Datos!)!;
+                    }
+                }
+            }
+            return null;
+        }
+
     }
 }

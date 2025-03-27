@@ -1,0 +1,58 @@
+﻿@model IEnumerable<ActivosNetCore.Models.TicketModel>
+
+@{
+    ViewData["Title"] = "Lista de Tickets";
+}
+
+<div class="content-wrap mt-3 p-3">
+    <div class="main">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <h2>Lista de Tickets</h2>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                @if (Model != null && Model.Any())
+                                {
+                                    <table id="ticketTable" class="table table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Urgencia</th>
+                                                <th>Detalle</th>
+                                                <th>Departamento</th>
+                                                <th>¿Solucionado?</th>
+                                                <th>Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var ticket in Model)
+                                            {
+                                                var detallesUrl = Url.Action("DetallesTicket", "Ticket", new { idTicket = ticket.IdTicket });
+                                                <tr>
+                                                    <td>@ticket.IdTicket</td>
+                                                    <td>@ticket.Urgencia</td>
+                                                    <td>@ticket.Detalle</td>
+                                                    <td>@(string.IsNullOrEmpty(ticket.NombreDepartamento) ? "Sin departamento" : ticket.NombreDepartamento)</td>
+                                                    <td>@(ticket.Solucionado ? "Sí" : "No")</td>
+                                                    <td>
+                                                        <a class="btn btn-primary text-white btn-rounded" href="@detallesUrl">Detalles</a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+                                else
+                                {
+                                    <div id="noResults" class="alert alert-warning">No se encontraron tickets.</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

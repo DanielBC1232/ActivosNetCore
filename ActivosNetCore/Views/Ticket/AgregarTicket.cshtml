@@ -1,0 +1,59 @@
+﻿@model TicketModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="container mt-4">
+    <h2>Agregar Nuevo Ticket</h2>
+
+    <form asp-action="AgregarTicket" asp-controller="Ticket">
+        <div class="mb-3">
+            <label class="form-label">Urgencia</label>
+            <input asp-for="Urgencia" class="form-control" />
+            <span asp-validation-for="Urgencia" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Detalle</label>
+            <textarea asp-for="Detalle" class="form-control"></textarea>
+            <span asp-validation-for="Detalle" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">ID Departamento</label>
+            <input asp-for="IdDepartamento" class="form-control" />
+            <span asp-validation-for="IdDepartamento" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">ID de Usuario</label>
+            <input asp-for="IdUsuario" class="form-control" value="1" readonly />
+            <span asp-validation-for="IdUsuario" class="text-danger"></span>
+        </div>
+
+
+        <div class="mb-3" hidden>
+            <label class="form-label">Asignado a:</label>
+            <input asp-for="IdResponsable" class="form-control" value="1" readonly />
+            <span asp-validation-for="IdResponsable" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3" hidden>
+            <label class="form-label">Comentario técnico:</label>
+            <input asp-for="DetalleTecnico" class="form-control" value="-" readonly />
+            <span asp-validation-for="DetalleTecnico" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3" hidden>
+            <label class="form-label">Solucionado:</label>
+            <input asp-for="Solucionado" class="form-control" value="False" readonly />
+            <span asp-validation-for="Solucionado" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a asp-action="ListaTicket" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+

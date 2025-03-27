@@ -7,6 +7,7 @@ namespace ActivosNetCore.Dependencias
        //List<ActivosModel> ObtenerInfoActivo(long Id);
         ActivosModel? ObtenerInfoActivo(int idActivo);
 
+        TicketModel? ObtenerInfoTicket(int idTicket);
 
     }
 }
