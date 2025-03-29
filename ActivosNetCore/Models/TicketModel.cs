@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ActivosNetCore.Models
 {
@@ -22,16 +23,17 @@ namespace ActivosNetCore.Models
 
         [Required(ErrorMessage = "El usuario es obligatorio.")]
         public int IdUsuario { get; set; }
-
+        [JsonPropertyName("nombreUsuario")]
         public string NombreUsuario { get; set; } = "Sin nombre usuario";
 
         [Required(ErrorMessage = "El departamento es obligatorio.")]
         public int IdDepartamento { get; set; }
-
+        [JsonPropertyName("nombreDepartamento")]
         public string NombreDepartamento { get; set; } = "Sin nombre departamento";
 
         public int IdResponsable { get; set; } = 1;
 
+        [JsonPropertyName("nombreResponsable")]
         public string NombreResponsable { get; set; } = "Sin nombre responsable";
 
     }

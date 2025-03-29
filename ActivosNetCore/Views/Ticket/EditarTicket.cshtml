@@ -1,1 +1,106 @@
-﻿
+﻿@model ActivosNetCore.Models.TicketModel
+
+@{
+    ViewData["Title"] = "Edicion del Ticket";
+}
+
+<div class="content-wrap mt-5 p-3">
+    <div class="main">
+        <div class="container-fluid overflow-hidden">
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="card-header bg-secondary"><h3 class="text-white">Edicion de Ticket</h3></div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <form asp-action="EditarTicket" asp-controller="Ticket">
+                                <div class="row g-5 p-3 mb-4 border-bottom">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Urgencia del Ticket:</label>
+                                            <select class="form-control" asp-for="Urgencia">
+                                                <option value="Baja">Baja</option>
+                                                <option value="Media">Media</option>
+                                                <option value="Alta">Alta</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Detalle:</label>
+                                            <input type="text" class="form-control" asp-for="Detalle" placeholder=""  />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Fecha:</label>
+                                            <input type="text" class="form-control" asp-for="Fecha" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 d-flex flex-column">
+                                        <div class="mb-3">
+                                            <label class="form-label">Solucionado:</label>
+                                            <select class="form-control" name="Solucionado">
+                                                @if (Model.Solucionado)
+                                                {
+                                                    <option value="true" selected>Si</option>
+                                                    <option value="false">No</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="true">Si</option>
+                                                    <option value="false" selected>No</option>
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Comentario del técnico:</label>
+                                            <input type="text" class="form-control" asp-for="DetalleTecnico" placeholder="" />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Creado por:</label>
+                                            <input type="text" class="form-control" asp-for="NombreUsuario" placeholder="" readonly />
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Asignado a:</label>
+                                            <input type="text" class="form-control" asp-for="NombreResponsable" placeholder="" readonly />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Departamento:</label>
+                                            <input type="text" class="form-control" asp-for="NombreDepartamento" placeholder=""  readonly/>
+                                        </div>
+                                        <div class="d-grid gap-5 align-self-end mt-3 row">
+                                            <div class="col-4">
+                                                <form asp-action="EliminarActivo" asp-controller="Ticket">
+                                                    <input type="hidden" asp-for="IdTicket">
+                                                    <button type="submit" class="btn btn-dark" id="btnEliminar">Eliminar</button>
+                                                </form>
+                                            </div>
+                                            <div class="col-4">
+                                                <button type="submit" class="btn btn-primary" asp-controller="Ticket" asp-action="EditarTicket">Guardar</button>
+                                            </div>
+                            </form>
+                            <div class="col-4">
+                                <a asp-action="ListaTicket" class="btn btn-secondary">Volver</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
+</div>
+<script>
+    $("#btnEliminar").click(function (e) {
+        var confirmar = confirm("¿Estás seguro de que deseas eliminar este ticket?");
+        if (confirmar) {
+            $("form").submit();
+        } else {
+            e.preventDefault();
+        }
+    });
+</script>
+
+
+

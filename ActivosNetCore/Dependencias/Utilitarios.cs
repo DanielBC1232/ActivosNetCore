@@ -37,7 +37,7 @@ namespace ActivosNetCore.Dependencias
             }
             return null;
         }
-
+        
         public TicketModel? ObtenerInfoTicket(int idTicket)
         {
             using (var api = _httpClient.CreateClient())
@@ -58,6 +58,29 @@ namespace ActivosNetCore.Dependencias
             }
             return null;
         }
+
+        /*
+        public TicketModel? ObtenerInfoTicket(int idTicket)
+        {
+            using var api = _httpClient.CreateClient();
+            var url = _configuration["Variables:urlApi"] + $"Ticket/DetallesTicket?idTicket={idTicket}";
+
+            var response = api.GetAsync(url).Result;
+
+            if (!response.IsSuccessStatusCode) return null;
+
+            var respuesta = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+            if (respuesta?.Indicador == true && respuesta.Datos != null)
+            {
+                // Deserializar correctamente el JsonElement
+                var datosJson = ((JsonElement)respuesta.Datos).GetRawText();
+                return JsonSerializer.Deserialize<TicketModel>(datosJson);
+            }
+
+            return null;
+        }*/
+
 
     }
 }

@@ -41,30 +41,32 @@ namespace ActivosAPI.Controllers
             }
 
         }
-
         [HttpGet]
         [Route("DetallesTicket")]
-        public async Task<IActionResult> DetallesTicket([FromQuery] int idTicket)
+        public IActionResult DetallesTicket([FromQuery] int idTicket)
         {
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
-                string storedProcedure = "sp_ConsultarTicket";
-                var parameters = new { idTicket = idTicket };
+                var parametros = new { idTicket };
 
-                var ticket = await context.QueryFirstOrDefaultAsync<TicketModel>(
-                    storedProcedure,
-                    parameters,
+                var ticket = context.QueryFirstOrDefault<TicketModel>(
+                    "SP_DetallesTicket",
+                    parametros,
                     commandType: CommandType.StoredProcedure
                 );
 
-                if (ticket == null)
+                var respuesta = new RespuestaModel
                 {
-                    return NotFound(new { message = "Ticket no encontrado" });
-                }
+                    Indicador = ticket != null,
+                    Mensaje = ticket != null ? "Ticket encontrado" : "Ticket no existe",
+                    Datos = ticket  
+                };
 
-                return Ok(new { Indicador = true, Mensaje = "Ticket encontrado", Datos = ticket });
+                return Ok(respuesta);
             }
         }
+
+
 
         [HttpPost]
         [Route("AgregarTicket")]
@@ -104,13 +106,15 @@ namespace ActivosAPI.Controllers
         {
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
+                // Aquí se usan todos los parámetros enviados desde el modelo
                 var result = context.Execute("sp_ActualizarTicket",
                     new
                     {
-                        model.IdTicket,
-                        model.Solucionado,
-                        model.DetalleTecnico,
-                        idResponsable = 1
+                        idTicket = model.IdTicket,
+                        urgencia = model.Urgencia,
+                        solucionado = model.Solucionado,
+                        detalleTecnico = model.DetalleTecnico,
+                        idResponsable = model.IdResponsable
                     });
 
                 var respuesta = new RespuestaModel();
@@ -124,13 +128,12 @@ namespace ActivosAPI.Controllers
                 else
                 {
                     respuesta.Indicador = false;
-                    respuesta.Mensaje = "El ticket no ha actualizado";
+                    respuesta.Mensaje = "El ticket no se ha actualizado";
                     return StatusCode(500, respuesta);
-
                 }
-
             }
         }
+
 
         [HttpPut]
         [Route("EliminarTicket")]
@@ -183,6 +186,22 @@ namespace ActivosAPI.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("ListaTicketFiltro")]
+        public IActionResult ListaTicketFiltro([FromQuery] string estado = "Todos", [FromQuery] string urgencia = "Todos")
+        {
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                var result = context.Query<TicketModel>("sp_ConsultarTodosTicketsFiltro",
+                    new { estado, urgencia },
+                    commandType: CommandType.StoredProcedure);
+
+                if (result.Any())
+                    return Ok(result);
+                else
+                    return NotFound(new { Indicador = false, Mensaje = "No hay datos disponibles" });
+            }
+        }
 
 
     }

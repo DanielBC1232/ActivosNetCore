@@ -5,14 +5,24 @@
 }
 
 
-<div class="container mt-4">
-    <h2>Agregar Nuevo Ticket</h2>
+<div class="content-wrap mt-5 p-3">
+    <div class="main">
+        <div class="container-fluid overflow-hidden">
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="card-header bg-secondary"><h3 class="text-white">Crear Ticket</h3></div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="table-responsive">
 
     <form asp-action="AgregarTicket" asp-controller="Ticket">
         <div class="mb-3">
-            <label class="form-label">Urgencia</label>
-            <input asp-for="Urgencia" class="form-control" />
             <span asp-validation-for="Urgencia" class="text-danger"></span>
+                 <select asp-for="Urgencia" class="form-control">
+                                            <option value="Baja" selected>Baja</option>
+                                            <option value="Media">Media</option>
+                                            <option value="Alta">Alta</option>
+                </select>
         </div>
 
         <div class="mb-3">
@@ -55,5 +65,11 @@
         <button type="submit" class="btn btn-success">Guardar</button>
         <a asp-action="ListaTicket" class="btn btn-secondary">Cancelar</a>
     </form>
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-

@@ -1,7 +1,7 @@
 ﻿@model ActivosNetCore.Models.TicketModel
 
 @{
-    ViewData["Title"] = "Detalle del Ticket";
+    ViewData["Title"] = "Detalles del Ticket";
 }
 
 <div class="content-wrap mt-5 p-3">
@@ -12,6 +12,7 @@
                     <div class="card-header bg-secondary"><h3 class="text-white">Detalles del ticket</h3></div>
                     <div class="card shadow-sm">
                         <div class="card-body">
+                            <form asp-action="EditarTicket" asp-controller="Ticket">
                             <div class="row g-5 p-3 mb-4 border-bottom">
                                 <div class="col-md-6">
                                     <div class="mb-3">
@@ -19,36 +20,37 @@
                                         <input type="text" class="form-control" asp-for="Urgencia" placeholder="" readonly />
 
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Detalle:</label>
-                                        <input type="text" class="form-control" asp-for="Detalle" placeholder="" readonly />
-                                    </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Detalle:</label>
+                                            <input type="text" class="form-control" readonly asp-for="Detalle" />
+                                        </div>
                                     <div class="mb-3">
                                         <label class="form-label">Fecha:</label>
                                         <input type="text" class="form-control" asp-for="Fecha" placeholder="" readonly />
                                     </div>
                                 </div>
                                 <div class="col-md-6 d-flex flex-column">
-                                    <div class="mb-3">
-                                        <label class="form-label">Solucionado:</label>
-                                        <input type="text" class="form-control" asp-for="Solucionado" placeholder="" readonly />
-                                    </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Solucionado:</label>
+                                            <input type="text" class="form-control" readonly
+                                                   value="@(Model.Solucionado ? "Si" : "No")" />
+                                        </div>
                                     <div class="mb-3">
                                         <label class="form-label">Comentario del técnico:</label>
-                                        <input type="text" class="form-control" asp-for="DetalleTecnico" placeholder="" readonly />
+                                            <input type="text" class="form-control" asp-for="DetalleTecnico" placeholder="" readonly />
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Creado por:</label>
-                                        <input type="text" class="form-control" asp-for="NombreUsuario" placeholder="" readonly />
+                                        <input type="text" class="form-control" asp-for="NombreUsuario" value="@Model.NombreUsuario" placeholder="" readonly />
                                     </div>
 
                                     <div class="mb-3">
                                         <label class="form-label">Asignado a:</label>
-                                        <input type="text" class="form-control" asp-for="NombreResponsable" placeholder="" readonly />
+                                            <input type="text" class="form-control" asp-for="NombreResponsable" value="@Model.NombreResponsable" placeholder="" readonly />
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Departamento:</label>
-                                        <input type="text" class="form-control" asp-for="NombreDepartamento" placeholder="" readonly />
+                                            <input type="text" class="form-control" asp-for="NombreDepartamento" value="@Model.NombreDepartamento" placeholder="" readonly />
                                     </div>
                                     <div class="d-grid gap-5 align-self-end mt-3 row">
                                         <div class="col-4">
@@ -60,6 +62,7 @@
                                         <div class="col-4">
                                             <a type="button" class="btn btn-secondary text-white" href="@Url.Action("EditarTicket","Ticket", new { idTicket = Model.IdTicket})">Editar</a>
                                         </div>
+                                        </form>
                                         <div class="col-4">
                                             <a asp-action="ListaTicket" class="btn btn-secondary">Volver</a>
                                         </div>

@@ -6,6 +6,7 @@ using System;
 using System.Reflection;
 using System.Text.Json;
 using ActivosNetCore.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ActivosNetCore.Controllers
 {
@@ -24,7 +25,7 @@ namespace ActivosNetCore.Controllers
 
         }
 
-        [HttpGet]
+        /*[HttpGet]
         public async Task<IActionResult>  ListaTicket(TicketModel? model)
         {
             using (var api = _httpClient.CreateClient())
@@ -40,7 +41,7 @@ namespace ActivosNetCore.Controllers
             }
             var ticket = new List<TicketModel>();
             return View(ticket);
-        }
+        }*/
 
         [HttpGet]
         public IActionResult AgregarTicket()
@@ -73,26 +74,22 @@ namespace ActivosNetCore.Controllers
         [HttpGet]
         public IActionResult DetallesTicket(int idTicket)
         {
-            var response = _utilitarios.ObtenerInfoTicket(idTicket) ?? new TicketModel();
-
-            if (response == null)
-            {
-                return NotFound("No se encontró el ticket.");
-            }
-
-            return View(response);
+            var ticket = _utilitarios.ObtenerInfoTicket(idTicket);
+            return ticket != null
+                ? View(ticket)
+                : NotFound("Ticket no encontrado");
         }
+
 
         [HttpGet]
         public IActionResult EditarTicket(int idTicket)
         {
-            var response = _utilitarios.ObtenerInfoTicket(idTicket) ?? new TicketModel();
 
+            var response = _utilitarios.ObtenerInfoTicket(idTicket) ?? new TicketModel();
             if (response == null)
             {
                 return NotFound("No se encontró el ticket.");
             }
-
             return View(response);
         }
 
@@ -106,15 +103,16 @@ namespace ActivosNetCore.Controllers
             using (var api = _httpClient.CreateClient())
             {
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Ticket/EditarTicket";
+               
                 var result = api.PutAsJsonAsync(url, model).Result;
                 if (result.IsSuccessStatusCode)
                 {
                     return RedirectToAction("ListaTicket", "Ticket");
                 }
-
                 return View();
             }
         }
+
 
         [HttpPost]
         public IActionResult EliminarActivo(TicketModel model)
@@ -154,6 +152,27 @@ namespace ActivosNetCore.Controllers
                 }
             }
         }
+
+
+        [HttpGet]
+        public async Task<IActionResult> ListaTicket(string estado = "Todos", string urgencia = "Todos")
+        {
+            using (var api = _httpClient.CreateClient())
+            {
+
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Ticket/ListaTicketFiltro"
+                          + $"?estado={estado}&urgencia={urgencia}";
+                var result = await api.GetAsync(url);
+
+                if (result.IsSuccessStatusCode)
+                {
+                    var tickets = await result.Content.ReadFromJsonAsync<List<TicketModel>>();
+                    return View(tickets);
+                }
+            }
+            return View(new List<TicketModel>());
+        }
+
 
 
     }
