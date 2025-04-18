@@ -1,4 +1,5 @@
-﻿@{
+﻿@model UsuarioModel;
+@{
     Layout = "~/Views/Shared/_LayoutExterno.cshtml";
 }
 
@@ -9,20 +10,16 @@
                 <div class="authincation-content p-4 shadow rounded">
                     <div class="auth-form">
                         <h4 class="text-center mb-4">Iniciar sesión con mi cuenta</h4>
-                        <form method="post">
+                        <form method="post" asp-action="IniciarSesion" asp-controller="Login">
                             <div class="mb-3">
                                 <label class="form-label"><strong>Correo electrónico</strong></label>
-                                <input type="email" class="form-control" name="email" required>
+                                <input asp-for="correo" type="email" class="form-control" name="correo" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label"><strong>Contraseña</strong></label>
-                                <input type="password" class="form-control" name="password" required>
+                                <label class="form-label text-start"><strong>Contraseña</strong></label>
+                                <input asp-for="contrasenna" type="password" class="form-control" name="contrasenna" required>
                             </div>
                             <div class="d-flex justify-content-between mt-3 mb-3">
-                                <div class="form-check ms-2">
-                                    <input class="form-check-input" type="checkbox" id="basic_checkbox_1">
-                                    <label class="form-check-label" for="basic_checkbox_1">Recuérdame</label>
-                                </div>
                                 <div>
                                     <a href="page-forgot-password.html" class="text-decoration-none">¿Olvidaste la contraseña?</a>
                                 </div>

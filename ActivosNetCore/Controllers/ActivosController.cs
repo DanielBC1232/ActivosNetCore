@@ -134,5 +134,12 @@ namespace ActivosNetCore.Controllers
             }
         }
 
+        //Select option - resposnables
+       /* private void CargarResponablesCombo()
+        {
+            var response = _utilitarios
+        }
+       */
+
     }
 }

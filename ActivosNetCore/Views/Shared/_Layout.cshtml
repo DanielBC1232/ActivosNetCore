@@ -25,8 +25,6 @@
 
 <body class="h-100">
 
-
-
     <!-- Barra Lateral -->
     <div class="sidebar sidebar-hide-to-small sidebar-shrink sidebar-gestures" style="min-width: 200px; min-height: 100vh">
         <div class="nano">
@@ -52,9 +50,10 @@
                     <li><a href="#"><i class="ti-align-left"></i>Historial de Responsables</a></li>
                     <hr>
                     <li class="label">Administrador</li>
+                    <li><a asp-controller="Login" asp-action="RegistrarCuenta"><i class="ti-view-list-alt"></i>Registrar Usuario</a></li>
                     <li><a href="#"><i class="ti-key"></i>Gestionar Permisos</a></li>
                     <hr>
-                    <li><a href="#"><i class="ti-close"></i> Logout</a></li>
+                    <li><a asp-controller="Login" asp-action="CerrarSesion"><i class="ti-close"></i> Logout</a></li>
                 </ul>
             </div>
         </div>

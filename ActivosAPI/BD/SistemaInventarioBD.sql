@@ -1,38 +1,44 @@
 Create Database SistemaInventario
+USE SistemaInventario;
+GO
 
 CREATE TABLE Departamento (
     idDepartamento INT PRIMARY KEY IDENTITY(1,1),
-    nombre VARCHAR(100)
+    nombreDepartamento VARCHAR(100)
 );
+GO
 
 CREATE TABLE Rol (
     idRol INT PRIMARY KEY IDENTITY(1,1),
     tipo VARCHAR(100)
 );
+GO
 
 CREATE TABLE Usuario (
-    idUsuario INT PRIMARY KEY IDENTITY(1,1),
-    usuario VARCHAR(100),
-    nombre VARCHAR(100),
-    apellido VARCHAR(100),
-    cedula VARCHAR(20),
-    correo VARCHAR(100),
-    contrasenia VARCHAR(100),
-    estado BIT,
-    idDepartamento INT FOREIGN KEY REFERENCES Departamento(idDepartamento),
-    idRol INT FOREIGN KEY REFERENCES Rol(idRol)
+    idUsuario INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+    usuario VARCHAR(100) NOT NULL,
+    nombreCompleto VARCHAR(100) NOT NULL,
+    cedula VARCHAR(20) NOT NULL,
+    correo VARCHAR(100) UNIQUE NOT NULL,
+    contrasenna NVARCHAR(256) NOT NULL,
+    estado BIT DEFAULT 1 NOT NULL,
+    idDepartamento INT FOREIGN KEY REFERENCES Departamento(idDepartamento) NOT NULL,
+    idRol INT FOREIGN KEY REFERENCES Rol(idRol) NOT NULL
 );
-
+GO
+select * from Usuario
 CREATE TABLE Permiso (
     idPermiso INT PRIMARY KEY IDENTITY(1,1),
     tipoPermiso VARCHAR(100)
 );
+GO
 
 CREATE TABLE Usuario_Permiso (
     id_Usuario_Permiso INT PRIMARY KEY IDENTITY(1,1),
     idUsuario INT FOREIGN KEY REFERENCES Usuario(idUsuario),
     idPermiso INT FOREIGN KEY REFERENCES Permiso(idPermiso)
 );
+GO
 
 CREATE TABLE Activo (
     idActivo INT PRIMARY KEY IDENTITY(1,1),
@@ -42,8 +48,9 @@ CREATE TABLE Activo (
     descripcion VARCHAR(255),
     estado BIT,
     idDepartamento INT FOREIGN KEY REFERENCES Departamento(idDepartamento),
-    idUsuario INT FOREIGN KEY REFERENCES Usuario(idUsuario)
+    idResponsable INT FOREIGN KEY REFERENCES Usuario(idUsuario)
 );
+GO
 
 CREATE TABLE Mantenimiento (
     idMantenimiento INT PRIMARY KEY IDENTITY(1,1),
@@ -54,6 +61,7 @@ CREATE TABLE Mantenimiento (
     idActivo INT FOREIGN KEY REFERENCES Activo(idActivo),
     idUsuario INT FOREIGN KEY REFERENCES Usuario(idUsuario)
 );
+GO
 
 CREATE TABLE Ticket (
     idTicket INT PRIMARY KEY IDENTITY(1,1),
@@ -67,11 +75,10 @@ CREATE TABLE Ticket (
     idUsuario INT FOREIGN KEY REFERENCES Usuario(idUsuario),
     idDepartamento INT FOREIGN KEY REFERENCES Departamento(idDepartamento)
 );
-
-
+GO
 --Procedimientos almacenados
 --Crear ticket 
-CREATE PROCEDURE sp_CrearTicket
+CREATE OR ALTER PROCEDURE sp_CrearTicket
     @urgencia VARCHAR(50),
     @detalle VARCHAR(255),
     @idUsuario INT,
@@ -80,7 +87,8 @@ AS
 BEGIN
       INSERT INTO Ticket (urgencia, detalle, fecha, solucionado, estado, idResponsable,idUsuario, idDepartamento)
     VALUES (@urgencia, @detalle, GETDATE(), 0, 1, NULL,@idUsuario, @idDepartamento)
-END
+END;
+GO
 
 --Crear ticket ACTUALIZADO
 CREATE OR ALTER PROCEDURE sp_CrearTicket
@@ -102,7 +110,8 @@ BEGIN
 
     INSERT INTO Ticket (urgencia, detalle, fecha, solucionado, estado, idResponsable,idUsuario, idDepartamento)
     VALUES (@urgencia, @detalle, GETDATE(), 0, 1, @idResponsable,@idUsuario, @idDepartamento)
-END
+END;
+GO
 
 --Consultar ticket por id
 CREATE OR ALTER PROCEDURE sp_ConsultarTicket
@@ -128,9 +137,8 @@ BEGIN
     INNER JOIN Departamento d ON t.idDepartamento = d.idDepartamento
     LEFT JOIN Usuario r ON t.idResponsable = r.idUsuario
     WHERE t.idTicket = @IdTicket
-END
-
-
+END;
+GO
 
 --Consultar todos los tickets
 CREATE OR ALTER PROCEDURE sp_ConsultarTodosTickets
@@ -151,10 +159,10 @@ BEGIN
     LEFT JOIN Usuario r ON t.idResponsable = r.idUsuario
     ORDER BY t.fecha DESC
 END
-
+GO
 
 --Actualizar ticket
-CREATE PROCEDURE sp_ActualizarTicket
+CREATE OR ALTER PROCEDURE sp_ActualizarTicket
     @idTicket INT,
 	@urgencia VARCHAR(50),
     @solucionado BIT,
@@ -179,9 +187,7 @@ AS
 BEGIN
     DELETE FROM Ticket WHERE idTicket = @IdTicket
 END
-
-
-
+GO
 
 --CREATE
 CREATE OR ALTER PROCEDURE SP_AgregarActivo(
@@ -214,11 +220,11 @@ BEGIN
 	A.descripcion,
 	A.idDepartamento,
 	D.nombre AS nombreDepartamento,
-	A.idUsuario,
+	A.idResponsable,
 	R.nombre AS nombreResponsable
 	FROM Activo A
 	INNER JOIN Departamento D ON D.idDepartamento = A.idDepartamento
-	INNER JOIN Usuario R ON R.idUsuario = A.idUsuario
+	INNER JOIN Usuario R ON R.idUsuario = A.idResponsable
 	WHERE A.idActivo = @idActivo
 	--AND estado = 1;
 
@@ -242,13 +248,13 @@ SET @SQL =
 	A.serie,
 	A.idDepartamento as idDepA,
 	D.idDepartamento as idDepD,
-	D.nombre AS nombreDepartamento,
-	A.idUsuario as idResA,
-	R.idUsuario as idResR,
-	R.nombre AS nombreResponsable
+	D.nombreDepartamento,
+	A.idResponsable as idResponsable,
+	U.idUsuario as idResR,
+	U.nombreCompleto as nombreResponsable
 	FROM Activo A
 	INNER JOIN Departamento D ON D.idDepartamento = A.idDepartamento
-	INNER JOIN Usuario R ON R.idUsuario = A.idUsuario
+	INNER JOIN Usuario U ON U.idUsuario = A.idResponsable
 	WHERE 1=1';
 
 	IF (@idDepartamento IS NOT NULL)
@@ -282,7 +288,7 @@ AS BEGIN
 	serie = @serie,
 	descripcion = @descripcion,
 	idDepartamento = @idDepartamento,
-	idUsuario = @idResponsable
+	@idResponsable = @idResponsable
 	WHERE idActivo = @idActivo
 
 END;
@@ -301,31 +307,68 @@ AS BEGIN
 END;
 GO
 
---Inserts de prueba
-INSERT INTO Departamento (nombre) VALUES ('Administración');
-INSERT INTO Departamento (nombre) VALUES ('Tecnología');
-INSERT INTO Departamento (nombre) VALUES ('Recursos Humanos');
+CREATE OR ALTER PROCEDURE SP_IniciarSesion
+@correo VARCHAR(50),
+@contrasenna VARCHAR(256)
+AS BEGIN
 
+	SELECT
+		U.idUsuario,
+		U.usuario,
+		U.idRol,
+		R.tipo
+	FROM Usuario U
+	INNER JOIN Rol R ON R.idRol = U.idRol
+	WHERE U.correo = @correo
+	AND contrasenna = @contrasenna
+
+END;
+GO
+
+--REGISTRAR CUENTA
+CREATE OR ALTER PROCEDURE SP_RegistrarCuenta
+@usuario VARCHAR(100),
+@nombreCompleto VARCHAR(100),
+@cedula VARCHAR(10),
+@correo VARCHAR(50),
+@contrasenna NVARCHAR(256),
+@idDepartamento INT,
+@idRol INT
+AS BEGIN
+
+	INSERT INTO Usuario(usuario,nombreCompleto,cedula,correo,contrasenna,idDepartamento,idRol)
+	VALUES (@usuario,@nombreCompleto,@cedula,@correo,@contrasenna,@idDepartamento,@idRol)
+
+END;
+GO
+
+--Inserts de prueba
+INSERT INTO Departamento (nombreDepartamento) VALUES ('Administración');
+INSERT INTO Departamento (nombreDepartamento) VALUES ('Tecnología');
+INSERT INTO Departamento (nombreDepartamento) VALUES ('Recursos Humanos');
+select * from Departamento
 -- Insertar roles
 INSERT INTO Rol (tipo) VALUES ('Administrador');
 INSERT INTO Rol (tipo) VALUES ('Usuario');
 INSERT INTO Rol (tipo) VALUES ('Soporte');
-
+Select * from Rol
+GO
 -- Insertar usuarios
-INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenia, estado, idDepartamento, idRol)
-VALUES ('jdoe', 'John', 'Doe', '1234567890', 'jdoe@example.com', 'password123', 1, 1, 1);
+INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('jdoe', 'John Doe', '1234567890', 'jdoe@example.com', 'password123', 1, 1, 1);
 
-INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenia, estado, idDepartamento, idRol)
-VALUES ('asmith', 'Alice', 'Smith', '9876543210', 'asmith@example.com', 'pass456', 1, 2, 2);
+INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('asmith', 'Alice Smith', '9876543210', 'asmith@example.com', 'pass456', 1, 2, 2);
 
-INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenia, estado, idDepartamento, idRol)
-VALUES ('bgarcia', 'Bob', 'Garcia', '1122334455', 'bgarcia@example.com', 'secret789', 1, 3, 3);
+INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('bgarcia', 'Bob Garcia', '1122334455', 'bgarcia@example.com', 'secret789', 1, 3, 3);
 
-INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenia, estado, idDepartamento, idRol)
-VALUES ('juanpedro', 'Juan', 'Pedro', '1122334465', 'juanpedro@example.com', 'secret7899', 1, 3, 3);
+INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('juanpedro', 'Juan Pedro', '1122334465', 'juanpedro@example.com', 'secret7899', 1, 3, 3);
 
-INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenia, estado, idDepartamento, idRol)
-VALUES ('juanpedro2', 'Juancito', 'Pedrito', '1122334475', 'juanpedro2@example.com', 'secret7898', 1, 3, 3);
+INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('juanpedro2', 'Juancito Pedrito', '1122334475', 'juanpedro2@example.com', 'secret7898', 1, 3, 3);
+GO
 
 -- Insertar permisos
 INSERT INTO Permiso (tipoPermiso) VALUES ('Crear');
@@ -337,16 +380,17 @@ INSERT INTO Usuario_Permiso (idUsuario, idPermiso) VALUES (1, 1);
 INSERT INTO Usuario_Permiso (idUsuario, idPermiso) VALUES (1, 2);
 INSERT INTO Usuario_Permiso (idUsuario, idPermiso) VALUES (2, 2);
 INSERT INTO Usuario_Permiso (idUsuario, idPermiso) VALUES (3, 3);
-
+GO
 -- Insertar activos
-INSERT INTO Activo (nombreActivo, placa, serie, descripcion, estado, idDepartamento, idUsuario)
+INSERT INTO Activo (nombreActivo, placa, serie, descripcion, estado, idDepartamento, idResponsable)
 VALUES ('Laptop Dell', 12345, 'SN12345', 'Laptop para uso general', 1, 2, 1);
 
-INSERT INTO Activo (nombreActivo, placa, serie, descripcion, estado, idDepartamento, idUsuario)
+INSERT INTO Activo (nombreActivo, placa, serie, descripcion, estado, idDepartamento, idResponsable)
 VALUES ('Impresora HP', 67890, 'SN67890', 'Impresora multifunción', 1, 1, 2);
 
-INSERT INTO Activo (nombreActivo, placa, serie, descripcion, estado, idDepartamento, idUsuario)
+INSERT INTO Activo (nombreActivo, placa, serie, descripcion, estado, idDepartamento, idResponsable)
 VALUES ('Monitor Samsung', 11111, 'SN11111', 'Monitor de alta definición', 1, 2, 3);
+GO
 
 -- Insertar mantenimientos
 INSERT INTO Mantenimiento (fecha, detalle, estado, idResponsable, idActivo, idUsuario)
@@ -367,7 +411,7 @@ VALUES ('Media', 'Error en software', '2025-04-05', 0, 1, 'En proceso de diagnós
 
 INSERT INTO Ticket (urgencia, detalle, fecha, solucionado, estado, detalleTecnico, idResponsable, idUsuario, idDepartamento)
 VALUES ('Baja', 'Solicitud de actualización', '2025-04-10', 1, 1, 'Actualizado correctamente', 3, 3, 3);
-
+GO
 Select * from Ticket;
 
 -- SP PARA FILTROS

@@ -2,6 +2,8 @@
 using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Text.Json;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace ActivosNetCore.Dependencias
 {
@@ -37,7 +39,7 @@ namespace ActivosNetCore.Dependencias
             }
             return null;
         }
-        
+
         public TicketModel? ObtenerInfoTicket(int idTicket)
         {
             using (var api = _httpClient.CreateClient())
@@ -58,6 +60,88 @@ namespace ActivosNetCore.Dependencias
             }
             return null;
         }
+
+
+
+        #region Usuarios
+
+        public string Encrypt(string texto)
+        {
+            byte[] iv = new byte[16];
+            byte[] array;
+
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(_configuration.GetSection("Variables:llaveCifrado").Value!);
+                aes.IV = iv;
+
+                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                using (MemoryStream memoryStream = new MemoryStream())
+                {
+                    using (CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                    {
+                        using (StreamWriter streamWriter = new StreamWriter(cryptoStream))
+                        {
+                            streamWriter.Write(texto);
+                        }
+
+                        array = memoryStream.ToArray();
+                    }
+                }
+            }
+
+            return Convert.ToBase64String(array);
+        }
+
+        public string Decrypt(string texto)
+        {
+            byte[] iv = new byte[16];
+            byte[] buffer = Convert.FromBase64String(texto);
+
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(_configuration.GetSection("Variables:llaveCifrado").Value!);
+                aes.IV = iv;
+
+                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+                using (MemoryStream memoryStream = new MemoryStream(buffer))
+                {
+                    using (CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (StreamReader streamReader = new StreamReader(cryptoStream))
+                        {
+                            return streamReader.ReadToEnd();
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        //Listar usuarios responables del activo
+        /*public HttpResponseMessage ObtenerResponsables()
+        {
+            using (var api = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlApi").Value + $"Activos/DetallesActivo";
+                var response = api.GetAsync(url).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+                    if (result != null && result.Indicador)
+                    {
+
+                        return JsonSerializer.Deserialize<ActivosModel>((JsonElement)result.Datos!)!;
+                    }
+                }
+            }
+            return null;
+        }*/
 
         /*
         public TicketModel? ObtenerInfoTicket(int idTicket)

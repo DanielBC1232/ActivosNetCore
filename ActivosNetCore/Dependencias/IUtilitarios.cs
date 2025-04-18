@@ -9,5 +9,7 @@ namespace ActivosNetCore.Dependencias
 
         TicketModel? ObtenerInfoTicket(int idTicket);
 
+        string Encrypt(string texto);
+
     }
 }
