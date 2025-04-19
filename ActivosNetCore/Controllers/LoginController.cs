@@ -48,13 +48,6 @@ namespace ActivosNetCore.Controllers
                         HttpContext.Session.SetString("Rol", datosResult!.tipo!);//Rol => /Administrador/Usuario/Soporte
                         HttpContext.Session.SetString("Token", datosResult!.Token!);
 
-                        var usuario = HttpContext.Session.GetString("Usuario");
-                        var rol = HttpContext.Session.GetString("Rol");
-                        var token = HttpContext.Session.GetString("Token");
-
-                        Console.WriteLine($"Usuario: {usuario}, Rol: {rol}, Token: {token}");
-
-
                         return RedirectToAction("ListaActivos", "Activos");
                     }
                     else
@@ -72,7 +65,6 @@ namespace ActivosNetCore.Controllers
         }
 
         #endregion
-
 
         #region Registrar
 
@@ -140,5 +132,42 @@ namespace ActivosNetCore.Controllers
         }
         #endregion
 
+
+        public IActionResult ListaUsuarios()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ObtenerUsuarios(UsuarioModel model)
+        {
+
+
+
+            var datos = new
+            {
+                nombreCompleto = model.nombreCompleto,
+                cedula = model.cedula,
+                idDepartamento= model.idDepartamento,
+                idRol=model.idRol
+            };
+            using (var api = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Login/ObtenerUsuarios";
+                var response = api.PostAsJsonAsync(url, datos).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+                    if (result != null && result.Indicador)
+                    {
+                        return View(result);
+                    }
+                }
+            }
+
+            return View();
+        }
     }
 }

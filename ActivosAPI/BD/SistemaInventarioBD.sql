@@ -307,6 +307,12 @@ AS BEGIN
 END;
 GO
 
+CREATE OR ALTER PROCEDURE SP_ObtenerListaDepartamento
+AS BEGIN
+	SELECT idDepartamento,nombreDepartamento from Departamento
+END;
+GO
+
 CREATE OR ALTER PROCEDURE SP_IniciarSesion
 @correo VARCHAR(50),
 @contrasenna VARCHAR(256)

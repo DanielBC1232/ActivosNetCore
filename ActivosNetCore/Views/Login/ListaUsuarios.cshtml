@@ -1,0 +1,110 @@
+﻿@model Tuple<UsuarioModel, List<UsuarioModel>>
+
+<div class="content-wrap mt-3 p-3">
+    <div class="main">
+        <div class="col-12">
+            <div class="card-header bg-secondary">
+                <h3 class="text-white">Lista de Usuarios</h3>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" asp-controller="Login" asp-action="ObtenerUsuarios">
+                        <div class="row g-3 align-items-end px-3">
+                            <div class="col-md-3">
+                                <input type="text" asp-for="Item1.nombreCompleto" class="form-control" placeholder="Nombre" />
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" asp-for="Item1.cedula" class="form-control" placeholder="Cédula" />
+                            </div>
+                            <div class="col-md-3">
+                                <label>Departamento:</label>
+                                <select asp-for="Item1.idDepartamento" id="departamentoFilter" class="form-select" data-selected="@Model.Item1.idDepartamento">
+                                    <option value="">Seleccionar</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label>Rol:</label>
+                                <select asp-for="Item1.idRol" id="rolFilter" class="form-select">
+                                    <option value="">Seleccione...</option>
+                                    <option value="1">Administrador</option>
+                                    <option value="2">Usuario</option>
+                                    <option value="3">Soporte</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">Buscar</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <table id="usuariosTable" class="table table-hover table-striped mt-4">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Cédula</th>
+                                <th>Departamento</th>
+                                <th>Rol</th>
+                                <th>Correo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @*
+                            @if (Model.Item2 != null && Model.Item2.Any())
+                            {
+                                foreach (var usuario in Model.Item2)
+                                {
+                                    <tr>
+                                        <td>@usuario.nombreCompleto</td>
+                                        <td>@usuario.cedula</td>
+                                        <td>@usuario.nombreDepartamento</td>
+                                        <td>@usuario.tipo</td>
+                                        <td>@usuario.correo</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No se encontraron usuarios.</td>
+                                </tr>
+                            }
+                            *@
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#departamentoFilter').select2();
+        $('#rolFilter').select2();
+
+        function cargarDepartamentos() {
+            $.ajax({
+                url: '/Login/ObtenerDepartamentos',
+                type: 'GET',
+                success: function (data) {
+                    const $select = $('#departamentoFilter');
+                    const selected = $select.data('selected');
+
+                    $.each(data, function (i, item) {
+                        const option = $('<option>', {
+                            value: item.id,
+                            text: item.nombre,
+                            selected: item.id == selected
+                        });
+                        $select.append(option);
+                    });
+                },
+                error: function () {
+                    console.error('Error al cargar departamentos');
+                }
+            });
+        }
+
+        cargarDepartamentos();
+    });
+</script>

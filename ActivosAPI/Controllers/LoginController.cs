@@ -88,12 +88,30 @@ namespace ActivosAPI.Controllers
             }
         }
 
-        [HttpGet]
-        public IActionResult CerrarSesion()
+        [HttpGet("ObtenerListaDepartamento")]
+        public IActionResult ObtenerListaDepartamento()
         {
-            HttpContext.Session.Clear();
-            return RedirectToAction("IniciarSesion", "Login");
+            var respuesta = new RespuestaModel();
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                var result = context.Query<UsuarioModel>("SP_ObtenerListaDepartamento");
+
+                if (result.Any())
+                {
+                    respuesta.Indicador = true;
+                    respuesta.Mensaje = "Información consultada";
+                    respuesta.Datos = result;
+                }
+                else
+                {
+                    respuesta.Indicador = false;
+                    respuesta.Mensaje = "No hay información registrada en este momento";
+                }
+
+                return Ok(respuesta);
+            }
         }
+
 
         #region Token
 
