@@ -6,9 +6,12 @@ using System;
 using System.Reflection;
 using System.Text.Json;
 using ActivosNetCore.Models;
+using System.Net.Http.Headers;
 
 namespace ActivosNetCore.Controllers
 {
+    [FiltroSeguridadSesion]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public class ActivosController : Controller
     {
         private readonly IHttpClientFactory _httpClient;
@@ -24,12 +27,12 @@ namespace ActivosNetCore.Controllers
         }
 
         //Listado de activos
-        [HttpGet]
+        [HttpPost]
         public IActionResult ListaActivos(ActivosModel? model)
         {
             using (var api = _httpClient.CreateClient())
             {
-                
+                api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/ListaActivos";
                 var result = api.PostAsJsonAsync(url, model).Result;
 
@@ -41,6 +44,14 @@ namespace ActivosNetCore.Controllers
             var activos = new List<ActivosModel>();
             return View(activos);
         }
+
+        [HttpGet]
+        public IActionResult ListaActivos()
+        {
+            ViewBag.Token = HttpContext.Session.GetString("Token");//cargar token en cshtml
+            return View();
+        }
+
 
         [HttpGet]
         public IActionResult AgregarActivo()
@@ -58,6 +69,7 @@ namespace ActivosNetCore.Controllers
             }
             using (var api = _httpClient.CreateClient())
             {
+                api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/AgregarActivo";
                 var result = api.PostAsJsonAsync(url, model).Result;
 
@@ -106,6 +118,7 @@ namespace ActivosNetCore.Controllers
             }
             using (var api = _httpClient.CreateClient())
             {
+                api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/EditarActivo";
                 var result = api.PutAsJsonAsync(url, model).Result;
                 if (result.IsSuccessStatusCode)
@@ -122,6 +135,8 @@ namespace ActivosNetCore.Controllers
         {
             using (var api = _httpClient.CreateClient())
             {
+                api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/EliminarActivo";
                 var result = api.PutAsJsonAsync(url, model).Result;
                 if (result.IsSuccessStatusCode)
@@ -136,11 +151,11 @@ namespace ActivosNetCore.Controllers
         }
 
         //Select option - resposnables
-       /* private void CargarResponablesCombo()
-        {
-            var response = _utilitarios
-        }
-       */
+        /* private void CargarResponablesCombo()
+         {
+             var response = _utilitarios
+         }
+        */
 
     }
 }

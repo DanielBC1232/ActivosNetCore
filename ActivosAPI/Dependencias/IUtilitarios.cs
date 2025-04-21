@@ -8,5 +8,7 @@ namespace ActivosAPI.Dependencias
 
         bool ValidarAdminFromToken(IEnumerable<Claim> valores);
 
+        bool ValidarTecnicoFromToken(IEnumerable<Claim> valores);
+
     }
 }

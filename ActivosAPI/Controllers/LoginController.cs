@@ -41,8 +41,10 @@ namespace ActivosAPI.Controllers
 
                 if (result != null)
                 {
-                    result.Token = GenerarToken(result.idUsuario, result.idRol);
+                    var Token = GenerarToken(result.idUsuario, result.idRol);
+                    result.Token = Token;
 
+                    Console.WriteLine($"LLAVE: {Token}");
                     respuesta.Indicador = true;
                     respuesta.Mensaje = "Su información se ha validado correctamente";
                     respuesta.Datos = result;
@@ -210,12 +212,12 @@ namespace ActivosAPI.Controllers
             claims.Add(new Claim("idRol", idRol.ToString()));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
-            var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(60),
-                signingCredentials: cred);
+                signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

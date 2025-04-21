@@ -25,5 +25,18 @@ namespace ActivosAPI.Dependencias
 
             return false;
         }
+
+        public bool ValidarTecnicoFromToken(IEnumerable<Claim> valores)
+        {
+            if (valores.Any())
+            {
+                var idRol = valores.FirstOrDefault(x => x.Type == "idRol")?.Value;
+                if (idRol == "1" || idRol == "3")//al validar tecnico el admin tambien tiene permiso
+                    return true;
+            }
+
+            return false;
+        }
+
     }
 }

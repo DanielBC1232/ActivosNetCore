@@ -13,9 +13,10 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error/CapturarError");
     app.UseHsts();
 }
+
+app.UseExceptionHandler("/Error/CapturarError");
 
 app.UseSession();
 
@@ -31,6 +32,6 @@ app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Activos}/{action=ListaActivos}/{id?}");
+    pattern: "{controller=Login}/{action=IniciarSesion}/{id?}");
 
 app.Run();

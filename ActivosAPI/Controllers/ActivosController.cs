@@ -1,29 +1,36 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using System.Net.Http;
+﻿using Dapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using Dapper;
-using System.Data;
+using ActivosAPI.Dependencias;
 using ActivosAPI.Models;
+using System.Data;
 
 namespace ActivosAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class ActivosController : Controller
+    public class ActivosController : ControllerBase
     {
 
         private readonly IConfiguration _configuration;
-
-        public ActivosController(IConfiguration configuration)
+        private readonly IUtilitarios _utilitarios;
+        public ActivosController(IConfiguration configuration, IUtilitarios utilitarios)
         {
             _configuration = configuration;
+            _utilitarios = utilitarios;
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("ListaActivos")]
         public IActionResult ListaActivos(int? idDepartamento)
         {
+
+            if (!_utilitarios.ValidarTecnicoFromToken(User.Claims))
+            {
+                return Ok();
+            }
 
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
@@ -56,8 +63,7 @@ namespace ActivosAPI.Controllers
                 var activo = await context.QueryFirstOrDefaultAsync<ActivosModel>(
                     storedProcedure,
                     parameters,
-                    commandType: CommandType.StoredProcedure
-                );
+                    commandType: CommandType.StoredProcedure);
 
                 if (activo == null)
                 {

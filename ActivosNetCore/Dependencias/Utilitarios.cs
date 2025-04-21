@@ -27,7 +27,6 @@ namespace ActivosNetCore.Dependencias
             using (var api = _httpClient.CreateClient())
             {
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Login/ObtenerListaDepartamento";
-
                 api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessor.HttpContext!.Session.GetString("Token"));
                 var response = api.GetAsync(url).Result;
 
@@ -40,6 +39,7 @@ namespace ActivosNetCore.Dependencias
         {
             using (var api = _httpClient.CreateClient())
             {
+                api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessor.HttpContext!.Session.GetString("Token"));
                 var url = _configuration.GetSection("Variables:urlApi").Value + $"Activos/DetallesActivo?idActivo=" + idActivo;
                 var response = api.GetAsync(url).Result;
 

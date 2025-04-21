@@ -41,6 +41,8 @@
     </div>
 </div>
 <script>
+    var bearerToken = '@ViewBag.Token';//Tomar token
+
     $(document).ready(function() {
         $('#departamentoFilter').select2();
 
@@ -52,7 +54,10 @@
          function cargarActivos(departamentoId) {
             $.ajax({
                 url: 'https://localhost:7056/api/Activos/ListaActivos',
-                method: 'GET',
+                method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + bearerToken
+                    },
                 data: { idDepartamento: departamentoId },
                 success: function(response) {
                     var tbody = $('#activosTable tbody');
