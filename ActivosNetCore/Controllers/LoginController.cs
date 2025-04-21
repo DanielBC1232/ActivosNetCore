@@ -2,6 +2,9 @@
 using ActivosNetCore.Dependencias;
 using ActivosNetCore.Models;
 using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Net.Http.Headers;
+using System.Reflection;
 
 namespace ActivosNetCore.Controllers
 {
@@ -16,6 +19,23 @@ namespace ActivosNetCore.Controllers
             _httpClient = httpClient;
             _configuration = configuration;
             _utilitarios = utilitarios;
+        }
+
+        [HttpGet]
+        public IActionResult ObtenerListaDepartamento(DepartamentoModel model)
+        {
+            var response = _utilitarios.ObtenerListaDepartamento();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = response.Content.ReadFromJsonAsync<List<DepartamentoModel>>().Result;
+
+                if (result != null)
+                { 
+                    return Json(result);
+                }
+            }
+            return Json(null);
         }
 
         #region Inicio sesion
@@ -103,7 +123,7 @@ namespace ActivosNetCore.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     //retornar a listado usuarios
-                    //return RedirectToAction("IniciarSesion", "Login");
+                    return RedirectToAction("ListaUsuarios", "Login");
                 }
                 else
                     ViewBag.Msj = "No se pudo completar su petición";
@@ -132,42 +152,44 @@ namespace ActivosNetCore.Controllers
         }
         #endregion
 
-
+        [HttpGet]
         public IActionResult ListaUsuarios()
         {
-            return View();
+            var datos = new UsuarioModel
+            {
+                idDepartamento = 0,
+                idRol = 0
+            };
+            return View(datos);
         }
 
         [HttpPost]
         public IActionResult ObtenerUsuarios(UsuarioModel model)
         {
-
-
-
             var datos = new
             {
                 nombreCompleto = model.nombreCompleto,
                 cedula = model.cedula,
-                idDepartamento= model.idDepartamento,
-                idRol=model.idRol
+                idDepartamento = model.idDepartamento,
+                idRol = model.idRol
             };
+ 
             using (var api = _httpClient.CreateClient())
             {
-                var url = _configuration.GetSection("Variables:urlApi").Value + "Login/ObtenerUsuarios";
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Login/ObtenerListaUsuarios";
                 var response = api.PostAsJsonAsync(url, datos).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                    var result = response.Content.ReadFromJsonAsync<List<UsuarioModel>>().Result;
 
-                    if (result != null && result.Indicador)
+                    if (result != null && result.Any())
                     {
-                        return View(result);
+                        return Json(result);
                     }
                 }
             }
-
-            return View();
+            return Json(new List<object>());
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿@model Tuple<UsuarioModel, List<UsuarioModel>>
+﻿@model UsuarioModel
 
 <div class="content-wrap mt-3 p-3">
     <div class="main">
@@ -8,24 +8,30 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <form method="post" asp-controller="Login" asp-action="ObtenerUsuarios">
+                    <form method="post" asp-controller="Login" asp-action="ObtenerUsuarios" id="filtrosForm">
                         <div class="row g-3 align-items-end px-3">
                             <div class="col-md-3">
-                                <input type="text" asp-for="Item1.nombreCompleto" class="form-control" placeholder="Nombre" />
+                                <input type="text" asp-for="nombreCompleto" class="form-control" placeholder="Nombre" />
                             </div>
                             <div class="col-md-3">
-                                <input type="text" asp-for="Item1.cedula" class="form-control" placeholder="Cédula" />
+                                <input type="text" asp-for="cedula" class="form-control" placeholder="Cédula" />
                             </div>
                             <div class="col-md-3">
                                 <label>Departamento:</label>
-                                <select asp-for="Item1.idDepartamento" id="departamentoFilter" class="form-select" data-selected="@Model.Item1.idDepartamento">
-                                    <option value="">Seleccionar</option>
+                                <select id="departamentoFilter"
+                                        name="idDepartamento"
+                                        data-selected="@Model.idDepartamento"
+                                        class="form-select">
+                                    <option selected value="0">Seleccionar</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
                                 <label>Rol:</label>
-                                <select asp-for="Item1.idRol" id="rolFilter" class="form-select">
-                                    <option value="">Seleccione...</option>
+                                <select id="rolFilter"
+                                        name="idRol"
+                                        data-selected="@Model.idRol"
+                                        class="form-select">
+                                    <option selected value="0">Seleccione...</option>
                                     <option value="1">Administrador</option>
                                     <option value="2">Usuario</option>
                                     <option value="3">Soporte</option>
@@ -47,29 +53,7 @@
                                 <th>Correo</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @*
-                            @if (Model.Item2 != null && Model.Item2.Any())
-                            {
-                                foreach (var usuario in Model.Item2)
-                                {
-                                    <tr>
-                                        <td>@usuario.nombreCompleto</td>
-                                        <td>@usuario.cedula</td>
-                                        <td>@usuario.nombreDepartamento</td>
-                                        <td>@usuario.tipo</td>
-                                        <td>@usuario.correo</td>
-                                    </tr>
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted">No se encontraron usuarios.</td>
-                                </tr>
-                            }
-                            *@
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
@@ -77,34 +61,88 @@
     </div>
 </div>
 
-<script>
-    $(document).ready(function () {
-        $('#departamentoFilter').select2();
-        $('#rolFilter').select2();
+@section Scripts {
+    <script>
+        $(function () {
+          $('#departamentoFilter, #rolFilter').select2({
+            placeholder: function(){
+              return $(this).find('option:selected').text();
+            },
+            allowClear: false,
+            width: '100%'
+          });
+          function parseOrZero(val) {
+            return val && val !== "" ? parseInt(val, 10) : 0;
+          }
+          function cargarDepartamentos() {
+            const $sel = $('#departamentoFilter');
+            const pre = parseOrZero($sel.data('selected'));
 
-        function cargarDepartamentos() {
+            // reset
+            $sel.empty()
+                .append(`<option value="0"${pre===0?' selected':''}>Seleccionar</option>`);
+
             $.ajax({
-                url: '/Login/ObtenerDepartamentos',
-                type: 'GET',
-                success: function (data) {
-                    const $select = $('#departamentoFilter');
-                    const selected = $select.data('selected');
-
-                    $.each(data, function (i, item) {
-                        const option = $('<option>', {
-                            value: item.id,
-                            text: item.nombre,
-                            selected: item.id == selected
-                        });
-                        $select.append(option);
-                    });
-                },
-                error: function () {
-                    console.error('Error al cargar departamentos');
-                }
+              url: '@Url.Action("ObtenerListaDepartamento", "Login")',
+              type: 'GET',
+              success: function (items) {
+                items.forEach(function (d) {
+                  const sel = pre === d.idDepartamento ? ' selected' : '';
+                  $sel.append(`<option value="${d.idDepartamento}"${sel}>${d.nombreDepartamento}</option>`);
+                });
+                // refresca Select2
+                $sel.trigger('change');
+              },
+              error: function () {
+                console.error('Error al cargar departamentos');
+              }
             });
-        }
+          }
 
-        cargarDepartamentos();
-    });
-</script>
+          $('#filtrosForm').on('submit', function (e) {
+          e.preventDefault();
+          const filtros = {
+              nombreCompleto: $('input[name="nombreCompleto"]').val().trim() || "",
+              cedula:         $('input[name="cedula"]').val().trim() ||"",
+              idDepartamento: parseOrZero($('#departamentoFilter').val()),
+              idRol:          parseOrZero($('#rolFilter').val())
+            };
+            console.log(filtros)
+            $.ajax({
+              url: '@Url.Action("ObtenerUsuarios", "Login")',
+              type: 'POST',
+              data: filtros,
+              success: function (users) {
+                const $tb = $('#usuariosTable tbody').empty();
+                if (users && users.length) {
+                  users.forEach(u => {
+                    $tb.append(`
+                      <tr>
+                        <td>${u.nombreCompleto}</td>
+                        <td>${u.cedula}</td>
+                        <td>${u.nombreDepartamento}</td>
+                        <td>${u.tipo}</td>
+                        <td>${u.correo}</td>
+                      </tr>
+                    `);
+                  });
+                } else {
+                  $tb.append(`
+                    <tr>
+                      <td colspan="5" class="text-center">No se encontraron usuarios</td>
+                    </tr>
+                  `);
+                }
+              },
+              error: function (xhr, stat, err) {
+                console.error('Error al obtener usuarios:', err);
+              }
+            });
+          
+          });
+
+          // Cargar
+          cargarDepartamentos();
+        });
+    </script>
+}

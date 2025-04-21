@@ -11,5 +11,7 @@ namespace ActivosNetCore.Dependencias
 
         string Encrypt(string texto);
 
+        HttpResponseMessage ObtenerListaDepartamento();
+
     }
 }

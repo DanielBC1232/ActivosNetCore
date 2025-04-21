@@ -29,6 +29,7 @@ namespace ActivosNetCore.Controllers
         {
             using (var api = _httpClient.CreateClient())
             {
+                
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/ListaActivos";
                 var result = api.PostAsJsonAsync(url, model).Result;
 

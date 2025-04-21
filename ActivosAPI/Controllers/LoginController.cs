@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Data;
+using ActivosAPI.Dependencias;
 
 namespace ActivosAPI.Controllers
 {
@@ -19,9 +20,11 @@ namespace ActivosAPI.Controllers
     {
 
         private readonly IConfiguration _configuration;
-        public LoginController(IConfiguration configuration)
+        private readonly IUtilitarios _utilitarios;
+        public LoginController(IConfiguration configuration, IUtilitarios utilitarios)
         {
             _configuration = configuration;
+            _utilitarios = utilitarios;
         }
 
         [HttpPost]
@@ -38,7 +41,7 @@ namespace ActivosAPI.Controllers
 
                 if (result != null)
                 {
-                    result.Token = GenerarToken(result.idUsuario);
+                    result.Token = GenerarToken(result.idUsuario, result.idRol);
 
                     respuesta.Indicador = true;
                     respuesta.Mensaje = "Su información se ha validado correctamente";
@@ -69,7 +72,7 @@ namespace ActivosAPI.Controllers
                     model.contrasenna,
                     model.idDepartamento,
                     model.idRol
-                },commandType: CommandType.StoredProcedure);
+                }, commandType: CommandType.StoredProcedure);
 
                 var respuesta = new RespuestaModel();
 
@@ -88,13 +91,45 @@ namespace ActivosAPI.Controllers
             }
         }
 
+        [HttpPost("ObtenerListaUsuarios")]
+        public IActionResult ObtenerListaUsuarios(UsuarioModel? model)
+        {
+            var parametros = new
+            {
+                nombreCompleto = string.IsNullOrWhiteSpace(model?.nombreCompleto) ? null : model.nombreCompleto,
+                cedula = string.IsNullOrWhiteSpace(model?.cedula) ? null : model.cedula,
+                idDepartamento = model?.idDepartamento > 0 ? model.idDepartamento : (int?)null,
+                idRol = model?.idRol > 0 ? model.idRol : (int?)null
+            };
+
+            var respuesta = new RespuestaModel();
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                var result = context.Query<UsuarioModel>("SP_ObtenerListaUsuarios", parametros, commandType: CommandType.StoredProcedure); ;
+
+                if (result.Any())
+                {
+                    respuesta.Indicador = true;
+                    respuesta.Mensaje = "Información consultada";
+                    respuesta.Datos = result;
+                }
+                else
+                {
+                    respuesta.Indicador = false;
+                    respuesta.Mensaje = "No hay información registrada en este momento";
+                }
+                return Ok(result);
+            }
+        }
+
         [HttpGet("ObtenerListaDepartamento")]
         public IActionResult ObtenerListaDepartamento()
         {
             var respuesta = new RespuestaModel();
+
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
-                var result = context.Query<UsuarioModel>("SP_ObtenerListaDepartamento");
+                var result = context.Query<DepartamentoModel>("SP_ObtenerListaDepartamento");
 
                 if (result.Any())
                 {
@@ -108,10 +143,9 @@ namespace ActivosAPI.Controllers
                     respuesta.Mensaje = "No hay información registrada en este momento";
                 }
 
-                return Ok(respuesta);
+                return Ok(respuesta.Datos);
             }
         }
-
 
         #region Token
 
@@ -167,12 +201,13 @@ namespace ActivosAPI.Controllers
                 }
             }
         }
-        private string GenerarToken(int idUsuario)
+        private string GenerarToken(int idUsuario, int idRol)
         {
             string SecretKey = _configuration.GetSection("Variables:llaveToken").Value!;
 
             List<Claim> claims = new List<Claim>();
             claims.Add(new Claim("idUsuario", idUsuario.ToString()));
+            claims.Add(new Claim("idRol", idRol.ToString()));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);

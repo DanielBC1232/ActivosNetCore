@@ -20,7 +20,7 @@ namespace ActivosAPI.Models
         //FK
         public int? idDepartamento { get; set; }
         public string? nombreDepartamento { get; set; }
-        public int? idRol { get; set; }
+        public int idRol { get; set; }
         public string? tipo { get; set; }
 
         //Token

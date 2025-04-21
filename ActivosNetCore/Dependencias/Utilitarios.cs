@@ -12,12 +12,29 @@ namespace ActivosNetCore.Dependencias
 
         private readonly IHttpClientFactory _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _accessor;
 
-        public Utilitarios(IHttpClientFactory httpClient, IConfiguration configuration)
+        public Utilitarios(IHttpClientFactory httpClient, IConfiguration configuration, IHttpContextAccessor accessor)
         {
             _httpClient = httpClient;
             _configuration = configuration;
+            _accessor = accessor;
+
         }
+
+        public HttpResponseMessage ObtenerListaDepartamento()
+        {
+            using (var api = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Login/ObtenerListaDepartamento";
+
+                api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessor.HttpContext!.Session.GetString("Token"));
+                var response = api.GetAsync(url).Result;
+
+                return response;
+            }
+        }
+
 
         public ActivosModel? ObtenerInfoActivo(int idActivo)
         {

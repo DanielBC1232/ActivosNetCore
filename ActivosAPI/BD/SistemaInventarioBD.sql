@@ -307,6 +307,43 @@ AS BEGIN
 END;
 GO
 
+CREATE OR ALTER PROCEDURE SP_ObtenerListaUsuarios
+@nombreCompleto VARCHAR(50) = NULL,
+@cedula VARCHAR(50) = NULL,
+@idDepartamento INT = NULL,
+@idRol INT = NULL
+AS
+BEGIN
+	DECLARE @sql NVARCHAR(MAX) = '
+	SELECT 
+		U.idUsuario,
+		U.usuario,
+		U.nombreCompleto,
+		U.cedula,
+		U.correo,
+		D.nombreDepartamento,
+		R.tipo
+	FROM Usuario U
+	INNER JOIN Departamento D ON D.idDepartamento = U.idDepartamento
+	INNER JOIN Rol R ON R.idRol = U.idRol
+	WHERE U.estado = 1'
+
+	IF @nombreCompleto IS NOT NULL AND @nombreCompleto <> ''
+		SET @sql += ' AND U.nombreCompleto LIKE ''%' + @nombreCompleto + '%'''
+
+	IF @cedula IS NOT NULL AND @cedula <> ''
+		SET @sql += ' AND U.cedula LIKE ''%' + @cedula + '%'''
+
+	IF @idDepartamento IS NOT NULL AND @idDepartamento <> 0
+		SET @sql += ' AND U.idDepartamento = ' + CAST(@idDepartamento AS VARCHAR)
+
+	IF @idRol IS NOT NULL AND @idRol <> 0
+		SET @sql += ' AND U.idRol = ' + CAST(@idRol AS VARCHAR)
+
+	EXEC sp_executesql @sql
+END
+GO
+
 CREATE OR ALTER PROCEDURE SP_ObtenerListaDepartamento
 AS BEGIN
 	SELECT idDepartamento,nombreDepartamento from Departamento
