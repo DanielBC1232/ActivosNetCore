@@ -50,12 +50,9 @@
                         </div>
                         @* SELECT QUEMADO DE MOMENTO - DEBE CAMBIAR *@
                         <div class="mb-3">
-                            <label name="idDepartamento" class="form-label"><strong>Departamento</strong></label>
-                            <select asp-for="idDepartamento" class="form-control">
-                                <option selected value="">Seleccione...</option>
-                                <option value="1">Administración</option>
-                                <option value="2">Tecnología</option>
-                                <option value="3">Recursos Humanos</option>
+                            <label  name="idDepartamento" class="form-label"><strong>Departamento</strong></label>
+                            <select asp-for="idDepartamento" id="departamentoFilter" class="form-control">
+                                <option selected value="0">Seleccione...</option>
                             </select>
                         </div>
                     </div>
@@ -71,3 +68,42 @@
         </div>
     </div>
 </div>
+<script>
+    $(document).ready(function() {
+    $('#departamentoFilter, #rolFilter').select2({
+            placeholder: function(){
+              return $(this).find('option:selected').text();
+            },
+            allowClear: false,
+            width: '100%'
+          });
+          function parseOrZero(val) {
+            return val && val !== "" ? parseInt(val, 10) : 0;
+          }
+          function cargarDepartamentos() {
+            const $sel = $('#departamentoFilter');
+            const pre = parseOrZero($sel.data('selected'));
+
+            // reset
+            $sel.empty()
+                .append(`<option value="0"${pre===0?' selected':''}>Seleccionar</option>`);
+
+            $.ajax({
+              url: '@Url.Action("ObtenerListaDepartamento", "Login")',
+              type: 'GET',
+              success: function (items) {
+                items.forEach(function (d) {
+                  const sel = pre === d.idDepartamento ? ' selected' : '';
+                  $sel.append(`<option value="${d.idDepartamento}"${sel}>${d.nombreDepartamento}</option>`);
+                });
+                // refresca Select2
+                $sel.trigger('change');
+              },
+              error: function () {
+                console.error('Error al cargar departamentos');
+              }
+            });
+          }
+        cargarDepartamentos();
+    });
+</script>

@@ -18,7 +18,6 @@ namespace ActivosAPI.Controllers
     [ApiController]
     public class LoginController : Controller
     {
-
         private readonly IConfiguration _configuration;
         private readonly IUtilitarios _utilitarios;
         public LoginController(IConfiguration configuration, IUtilitarios utilitarios)
@@ -59,10 +58,16 @@ namespace ActivosAPI.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost]
         [Route("RegistrarCuenta")]
         public IActionResult RegistrarCuenta(UsuarioModel model)
         {
+            if (!_utilitarios.ValidarAdminFromToken(User.Claims)) //solo admin
+            {
+                return Unauthorized(new { message = "Acceso no autorizado" });
+            }
+
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
                 var result = context.Execute("SP_RegistrarCuenta", new
@@ -93,9 +98,11 @@ namespace ActivosAPI.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost("ObtenerListaUsuarios")]
         public IActionResult ObtenerListaUsuarios(UsuarioModel? model)
         {
+            //limpiar parametros
             var parametros = new
             {
                 nombreCompleto = string.IsNullOrWhiteSpace(model?.nombreCompleto) ? null : model.nombreCompleto,
@@ -122,6 +129,7 @@ namespace ActivosAPI.Controllers
                 }
                 return Ok(result);
             }
+
         }
 
         [HttpGet("ObtenerListaDepartamento")]

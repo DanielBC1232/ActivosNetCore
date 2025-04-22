@@ -13,10 +13,8 @@
                                 <div class="row d-flex align-items-center">
                                     <div class="col-3 my-3">
                                         <p class="card-title">Departamento:</p>
-                                        <select id="departamentoFilter" class="form-select">
-                                            <option value="">Seleccionar</option>
-                                            <option value="1">Tecnologías de Información</option>
-                                            <option value="2">Recursos Humanos</option>
+                                        <select id="departamentoFilter" name="idDepartamento" class="form-select">
+                                            <option value="0">Seleccionar</option>
                                         </select>
                                     </div>
                                 </div>
@@ -44,21 +42,55 @@
     var bearerToken = '@ViewBag.Token';//Tomar token
 
     $(document).ready(function() {
-        $('#departamentoFilter').select2();
+    $('#departamentoFilter, #rolFilter').select2({
+            placeholder: function(){
+              return $(this).find('option:selected').text();
+            },
+            allowClear: false,
+            width: '100%'
+          });
+          function parseOrZero(val) {
+            return val && val !== "" ? parseInt(val, 10) : 0;
+          }
+          function cargarDepartamentos() {
+            const $sel = $('#departamentoFilter');
+            const pre = parseOrZero($sel.data('selected'));
+
+            // reset
+            $sel.empty()
+                .append(`<option value="0"${pre===0?' selected':''}>Seleccionar</option>`);
+
+            $.ajax({
+              url: '@Url.Action("ObtenerListaDepartamento", "Login")',
+              type: 'GET',
+              success: function (items) {
+                items.forEach(function (d) {
+                  const sel = pre === d.idDepartamento ? ' selected' : '';
+                  $sel.append(`<option value="${d.idDepartamento}"${sel}>${d.nombreDepartamento}</option>`);
+                });
+                // refresca Select2
+                $sel.trigger('change');
+              },
+              error: function () {
+                console.error('Error al cargar departamentos');
+              }
+            });
+          }
+        cargarDepartamentos();
 
         $('#departamentoFilter').change(function() {
         var departamentoId = $(this).val();
         cargarActivos(departamentoId);
-    });
 
-         function cargarActivos(departamentoId) {
+         function cargarActivos(idDepartamento) {
             $.ajax({
                 url: 'https://localhost:7056/api/Activos/ListaActivos',
                 method: 'POST',
                     headers: {
                         'Authorization': 'Bearer ' + bearerToken
                     },
-                data: { idDepartamento: departamentoId },
+                contentType: 'application/json',
+                data: JSON.stringify({ idDepartamento: idDepartamento }),
                 success: function(response) {
                     var tbody = $('#activosTable tbody');
                     tbody.empty();
@@ -88,5 +120,6 @@
         }
 
         cargarActivos('');
+    });
     });
 </script>

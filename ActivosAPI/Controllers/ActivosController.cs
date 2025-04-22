@@ -5,10 +5,12 @@ using Microsoft.Data.SqlClient;
 using ActivosAPI.Dependencias;
 using ActivosAPI.Models;
 using System.Data;
+using System.Reflection;
 
 namespace ActivosAPI.Controllers
 {
     [Authorize]
+    //[AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class ActivosController : ControllerBase
@@ -24,14 +26,13 @@ namespace ActivosAPI.Controllers
 
         [HttpPost]
         [Route("ListaActivos")]
-        public IActionResult ListaActivos(int? idDepartamento)
+        public IActionResult ListaActivos([FromBody] DepartamentoModel model)
         {
-
+            var idDepartamento = model.idDepartamento;
             if (!_utilitarios.ValidarTecnicoFromToken(User.Claims))
             {
-                return Ok();
+                return Unauthorized(new { message = "Acceso no autorizado" });
             }
-
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
                 var result = context.Query<ActivosModel>("SP_ListadoActivo",
@@ -54,23 +55,29 @@ namespace ActivosAPI.Controllers
         [Route("DetallesActivo")]
         public async Task<IActionResult> DetallesActivo([FromQuery] int idActivo)
         {
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            if (!_utilitarios.ValidarTecnicoFromToken(User.Claims))
             {
-                string storedProcedure = "SP_DetallesActivo";
-                var parameters = new { idActivo = idActivo };
-
-                // Esperar correctamente la tarea asincrónica
-                var activo = await context.QueryFirstOrDefaultAsync<ActivosModel>(
-                    storedProcedure,
-                    parameters,
-                    commandType: CommandType.StoredProcedure);
-
-                if (activo == null)
+                return Unauthorized(new { message = "Acceso no autorizado" });
+            }
+            else
+            {
+                using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
                 {
-                    return NotFound(new { message = "Activo no encontrado" });
-                }
+                    string storedProcedure = "SP_DetallesActivo";
+                    var parameters = new { idActivo };
+                    // Esperar correctamente la tarea asincrónica
+                    var activo = await context.QueryFirstOrDefaultAsync<ActivosModel>(
+                        storedProcedure,
+                        parameters,
+                        commandType: CommandType.StoredProcedure);
 
-                return Ok(new { Indicador = true, Mensaje = "Activo encontrado", Datos = activo });
+                    if (activo == null)
+                    {
+                        return NotFound(new { message = "Activo no encontrado" });
+                    }
+
+                    return Ok(new { Indicador = true, Mensaje = "Activo encontrado", Datos = activo });
+                }
             }
         }
 
@@ -78,6 +85,10 @@ namespace ActivosAPI.Controllers
         [Route("AgregarActivo")]
         public IActionResult AgregarActivo(ActivosModel model)
         {
+            if (!_utilitarios.ValidarTecnicoFromToken(User.Claims))
+            {
+                return Ok();
+            }
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
                 var result = context.Execute("SP_AgregarActivo",
@@ -104,6 +115,10 @@ namespace ActivosAPI.Controllers
         [Route("EditarActivo")]
         public IActionResult EditarActivo(ActivosModel model)
         {
+            if (!_utilitarios.ValidarTecnicoFromToken(User.Claims))
+            {
+                return Unauthorized(new { message = "Acceso no autorizado" });
+            }
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
                 var result = context.Execute("SP_EditarActivo",
@@ -132,6 +147,10 @@ namespace ActivosAPI.Controllers
         [Route("EliminarActivo")]
         public IActionResult EliminarActivo(ActivosModel model)
         {
+            if (!_utilitarios.ValidarTecnicoFromToken(User.Claims))
+            {
+                return Unauthorized(new { message = "Acceso no autorizado" });
+            }
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
                 var result = context.Execute("SP_EliminarActivo",

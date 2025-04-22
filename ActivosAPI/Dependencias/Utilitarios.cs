@@ -4,39 +4,32 @@ namespace ActivosAPI.Dependencias
 {
     public class Utilitarios : IUtilitarios
     {
-        public long ObtenerUsuarioFromToken(IEnumerable<Claim> valores)
-        {
-            if (valores.Any())
-            {
-                var idUsuario = valores.FirstOrDefault(x => x.Type == "idUsuario")?.Value;
-                return long.Parse(idUsuario!);
-            }
+        private const string RolAdmin = "1";
+        private const string RolUsuario = "2";
+        private const string RolTecnico = "3";
+        private const string ClaimUsuario = "idUsuario";
+        private const string ClaimRol = "idRol";
 
-            return 0;
+        private string? ObtenerClaim(IEnumerable<Claim> claims, string tipo) =>
+            claims.FirstOrDefault(c => c.Type == tipo)?.Value;
+
+        public int ObtenerUsuarioFromToken(IEnumerable<Claim> claims)
+        {
+            var valor = ObtenerClaim(claims, ClaimUsuario);
+            return int.TryParse(valor, out var id) ? id : 0;
         }
 
-        public bool ValidarAdminFromToken(IEnumerable<Claim> valores)
+        private bool ValidarRol(IEnumerable<Claim> claims, params string[] rolesPermitidos)
         {
-            if (valores.Any())
-            {
-                var idRol = valores.FirstOrDefault(x => x.Type == "idRol")?.Value;
-                return idRol == "1";
-            }
-
-            return false;
+            var valor = ObtenerClaim(claims, ClaimRol);
+            return valor != null && rolesPermitidos.Contains(valor);
         }
 
-        public bool ValidarTecnicoFromToken(IEnumerable<Claim> valores)
-        {
-            if (valores.Any())
-            {
-                var idRol = valores.FirstOrDefault(x => x.Type == "idRol")?.Value;
-                if (idRol == "1" || idRol == "3")//al validar tecnico el admin tambien tiene permiso
-                    return true;
-            }
+        public bool ValidarAdminFromToken(IEnumerable<Claim> claims) =>
+            ValidarRol(claims, RolAdmin);
 
-            return false;
-        }
+        public bool ValidarTecnicoFromToken(IEnumerable<Claim> claims) =>
+            ValidarRol(claims, RolAdmin, RolTecnico);
 
     }
 }

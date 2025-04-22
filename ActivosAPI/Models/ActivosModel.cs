@@ -4,7 +4,7 @@
     {
         public int? idActivo { get; set; }
         public string? nombreActivo { get; set; }
-        public string? placa { get; set; }
+        public int? placa { get; set; }
         public string? serie { get; set; }
         public string? descripcion { get; set; }
         public bool? estado { get; set; }

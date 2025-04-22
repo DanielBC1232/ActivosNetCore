@@ -26,32 +26,12 @@ namespace ActivosNetCore.Controllers
 
         }
 
-        //Listado de activos
-        [HttpPost]
-        public IActionResult ListaActivos(ActivosModel? model)
-        {
-            using (var api = _httpClient.CreateClient())
-            {
-                api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-                var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/ListaActivos";
-                var result = api.PostAsJsonAsync(url, model).Result;
-
-                if (result.IsSuccessStatusCode)
-                {
-                    return View(result);
-                }
-            }
-            var activos = new List<ActivosModel>();
-            return View(activos);
-        }
-
         [HttpGet]
         public IActionResult ListaActivos()
         {
             ViewBag.Token = HttpContext.Session.GetString("Token");//cargar token en cshtml
             return View();
         }
-
 
         [HttpGet]
         public IActionResult AgregarActivo()

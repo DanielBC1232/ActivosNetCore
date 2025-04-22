@@ -192,14 +192,14 @@ GO
 --CREATE
 CREATE OR ALTER PROCEDURE SP_AgregarActivo(
 @nombreActivo VARCHAR(100),
-@placa VARCHAR(50),
+@placa INT,
 @serie VARCHAR(50),
 @descripcion NVARCHAR(1024),
 @idDepartamento	INT,
 @idResponsable INT)
 AS BEGIN
 
-	INSERT INTO Activo(nombreActivo,placa,serie,descripcion,estado,idDepartamento,idUsuario)
+	INSERT INTO Activo(nombreActivo,placa,serie,descripcion,estado,idDepartamento,idResponsable)
 	VALUES (@nombreActivo,@placa,@serie,@descripcion,1,@idDepartamento,@idResponsable);
 
 END;
@@ -219,9 +219,9 @@ BEGIN
 	A.serie,
 	A.descripcion,
 	A.idDepartamento,
-	D.nombre AS nombreDepartamento,
+	D.nombreDepartamento,
 	A.idResponsable,
-	R.nombre AS nombreResponsable
+	R.nombreCompleto AS nombreResponsable
 	FROM Activo A
 	INNER JOIN Departamento D ON D.idDepartamento = A.idDepartamento
 	INNER JOIN Usuario R ON R.idUsuario = A.idResponsable
@@ -257,7 +257,7 @@ SET @SQL =
 	INNER JOIN Usuario U ON U.idUsuario = A.idResponsable
 	WHERE 1=1';
 
-	IF (@idDepartamento IS NOT NULL)
+	IF (@idDepartamento IS NOT NULL AND @idDepartamento <> 0)
 	BEGIN
 		SET @SQL = @SQL + 'AND A.idDepartamento = @idDepartamento';
 	END;

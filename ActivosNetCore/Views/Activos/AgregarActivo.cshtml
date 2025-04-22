@@ -27,7 +27,7 @@
                                                 <span asp-validation-for="serie" class="text-danger"></span>
                                             </div>
                                             <div class="mb-3">
-                                                <label for="idResponsable" class="form-label">Responsable:</label>
+                                                <label for="idResponsable" class="form-label">Empleado responsable:</label>
                                                 <select asp-for="idResponsable" id="idResponsable" class="form-control">
                                                     <option value="">Seleccionar...</option>
                                                     <option value="1">[Responsable 1]</option>
@@ -40,7 +40,7 @@
                                         <div class="col-md-6 d-flex flex-column">
                                             <div class="mb-3">
                                                 <label for="placa" class="form-label">Placa:</label>
-                                                <input asp-for="placa" type="text" class="form-control">
+                                                <input asp-for="placa" type="number" class="form-control">
                                                 <span asp-validation-for="placa" class="text-danger"></span>
                                             </div>
                                             <div class="mb-3">
@@ -50,10 +50,8 @@
                                             </div>
                                             <div class="mb-3">
                                                 <label for="idDepartamento" class="form-label">Departamento:</label>
-                                                <select asp-for="idDepartamento" id="idDepartamento" class="form-control">
-                                                    <option value="">Seleccionar...</option>
-                                                    <option value="1">Tecnologías de Información</option>
-                                                    <option value="2">Recursos Humanos</option>
+                                                <select asp-for="idDepartamento" id="departamentoFilter" class="form-control">
+                                                    <option id="departamentoFilter" value="0">Seleccionar...</option>
                                                 </select>
                                                 <span asp-validation-for="idDepartamento" class="text-danger"></span>
                                             </div>
@@ -74,9 +72,40 @@
 
 <script>
     $(document).ready(function() {
-        $('#idResponsable, #idDepartamento').select2({
-            placeholder: "Seleccionar...",
-            allowClear: true // deseleccionar
+        $('#departamentoFilter, #rolFilter').select2({
+                placeholder: function(){
+                  return $(this).find('option:selected').text();
+                },
+                allowClear: false,
+                width: '100%'
+              });
+              function parseOrZero(val) {
+                return val && val !== "" ? parseInt(val, 10) : 0;
+              }
+              function cargarDepartamentos() {
+                const $sel = $('#departamentoFilter');
+                const pre = parseOrZero($sel.data('selected'));
+
+                // reset
+                $sel.empty()
+                    .append(`<option value="0"${pre===0?' selected':''}>Seleccionar</option>`);
+
+                $.ajax({
+                  url: '@Url.Action("ObtenerListaDepartamento", "Login")',
+                  type: 'GET',
+                  success: function (items) {
+                    items.forEach(function (d) {
+                      const sel = pre === d.idDepartamento ? ' selected' : '';
+                      $sel.append(`<option value="${d.idDepartamento}"${sel}>${d.nombreDepartamento}</option>`);
+                    });
+                    // refresca Select2
+                    $sel.trigger('change');
+                  },
+                  error: function () {
+                    console.error('Error al cargar departamentos');
+                  }
+                });
+              }
+            cargarDepartamentos();
         });
-    });
 </script>

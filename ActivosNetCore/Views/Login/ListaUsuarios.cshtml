@@ -51,6 +51,8 @@
                                 <th>Departamento</th>
                                 <th>Rol</th>
                                 <th>Correo</th>
+                                <th>Acciones</th>
+
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -107,7 +109,7 @@
               idDepartamento: parseOrZero($('#departamentoFilter').val()),
               idRol:          parseOrZero($('#rolFilter').val())
             };
-            console.log(filtros)
+            
             $.ajax({
               url: '@Url.Action("ObtenerUsuarios", "Login")',
               type: 'POST',
@@ -116,6 +118,7 @@
                 const $tb = $('#usuariosTable tbody').empty();
                 if (users && users.length) {
                   users.forEach(u => {
+                    const detallesUrl = "@Url.Action("DetallesUsuarios", "Login")" + "?idUsuario=" + u.idUsuario;
                     $tb.append(`
                       <tr>
                         <td>${u.nombreCompleto}</td>
@@ -123,6 +126,10 @@
                         <td>${u.nombreDepartamento}</td>
                         <td>${u.tipo}</td>
                         <td>${u.correo}</td>
+                        <td>
+                        <a class="btn btn-primary text-white" href="${detallesUrl}">Detalles</a>
+                        </td>
+
                       </tr>
                     `);
                   });

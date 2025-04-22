@@ -4,7 +4,7 @@ namespace ActivosAPI.Dependencias
 {
     public interface IUtilitarios
     {
-        long ObtenerUsuarioFromToken(IEnumerable<Claim> valores);
+        int ObtenerUsuarioFromToken(IEnumerable<Claim> valores);
 
         bool ValidarAdminFromToken(IEnumerable<Claim> valores);
 

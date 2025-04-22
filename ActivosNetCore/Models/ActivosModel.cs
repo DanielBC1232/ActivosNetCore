@@ -10,7 +10,7 @@ namespace ActivosNetCore.Models
         public string? nombreActivo { get; set; }
 
         [Required(ErrorMessage = "La placa es obligatoria.")]
-        public string? placa { get; set; }
+        public int? placa { get; set; }
 
         [Required(ErrorMessage = "La serie es obligatoria.")]
         public string? serie { get; set; }
