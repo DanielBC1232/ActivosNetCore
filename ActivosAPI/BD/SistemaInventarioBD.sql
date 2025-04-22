@@ -25,8 +25,11 @@ CREATE TABLE Usuario (
     idDepartamento INT FOREIGN KEY REFERENCES Departamento(idDepartamento) NOT NULL,
     idRol INT FOREIGN KEY REFERENCES Rol(idRol) NOT NULL
 );
+Go
 
 select * from Usuario
+GO
+
 CREATE TABLE Permiso (
     idPermiso INT PRIMARY KEY IDENTITY(1,1),
     tipoPermiso VARCHAR(100)
@@ -142,7 +145,7 @@ BEGIN
         t.idDepartamento,
         t.idResponsable,
         u.nombreCompleto AS nombreUsuario,
-        d.nombre AS nombreDepartamento,
+        d.nombreDepartamento,
         r.nombreCompleto AS nombreResponsable
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
@@ -163,7 +166,7 @@ BEGIN
 		t.idDepartamento,
 		t.idResponsable,
         u.nombreCompleto AS nombreUsuario,
-        d.nombre AS nombreDepartamento,
+        d.nombreDepartamento,
         r.nombreCompleto AS nombreResponsable
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
@@ -253,12 +256,12 @@ BEGIN
 	INNER JOIN Departamento D ON D.idDepartamento = A.idDepartamento
 	INNER JOIN Usuario R ON R.idUsuario = A.idResponsable
 	WHERE A.idActivo = @idActivo
-	--AND estado = 1;
+
 END;
 GO
 
 --READ (Listado)
-CREATE OR ALTER PROCEDURE SPP_ListadoActivo(
+CREATE OR ALTER PROCEDURE SP_ListadoActivo(
 @idDepartamento INT NULL
 )
 AS
@@ -373,7 +376,7 @@ GO
 
 CREATE OR ALTER PROCEDURE SP_ObtenerListaDepartamento
 AS BEGIN
-	SELECT idDepartamento,nombre from Departamento
+	SELECT idDepartamento,nombreDepartamento from Departamento
 END;
 GO
 
@@ -410,57 +413,11 @@ AS BEGIN
 
 END;
 GO
-/*
---Registrar cuenta
-CREATE OR ALTER PROCEDURE SP_RegistrarCuenta
-@usuario VARCHAR(100),
-@nombre VARCHAR(100),
-@apellido VARCHAR(100),
-@cedula VARCHAR(10),
-@correo VARCHAR(50),
-@contrasenna NVARCHAR(256),
-@idDepartamento INT,
-@idRol INT
-AS BEGIN
 
-<<<<<<< Updated upstream
---READ (Detalle USUARIO)
-CREATE OR ALTER PROCEDURE SP_DetallesUsuario(
-@idUsuario INT
-)
-AS
-BEGIN
-
-	SELECT 
-		U.idUsuario,
-		U.usuario,
-		U.nombreCompleto,
-		U.cedula,
-		U.correo,
-		D.idDepartamento,
-		D.nombreDepartamento,
-		R.idRol,
-		R.tipo
-	FROM Usuario U
-	INNER JOIN Departamento D ON D.idDepartamento = U.idDepartamento
-	INNER JOIN Rol R ON R.idRol = U.idRol
-	WHERE U.idUsuario = @idUsuario
-
-END;
-GO
-
-=======
-	INSERT INTO Usuario(usuario,nombre, apellido,cedula,correo,contrasenna,idDepartamento,idRol)
-	VALUES (@usuario,@nombre, @apellido,@cedula,@correo,@contrasenna,@idDepartamento,@idRol)
-
-END;
-GO
-*/
->>>>>>> Stashed changes
 --Inserts de prueba
-INSERT INTO Departamento (nombre) VALUES ('Administración');
-INSERT INTO Departamento (nombre) VALUES ('Tecnología');
-INSERT INTO Departamento (nombre) VALUES ('Recursos Humanos');
+INSERT INTO Departamento (nombreDepartamento) VALUES ('Administración');
+INSERT INTO Departamento (nombreDepartamento) VALUES ('Tecnología');
+INSERT INTO Departamento (nombreDepartamento) VALUES ('Recursos Humanos');
 select * from Departamento
 -- Insertar roles
 INSERT INTO Rol (tipo) VALUES ('Administrador');
@@ -469,20 +426,20 @@ INSERT INTO Rol (tipo) VALUES ('Soporte');
 Select * from Rol
 GO
 -- Insertar usuarios
-INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('jdoe', 'John,',' Doe', '1234567890', 'jdoe@example.com', 'password123', 1, 1, 1);
+INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('jdoe', 'John Doe', '1234567890', 'jdoe@example.com', 'password123', 1, 1, 1);
 
-INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('asmith', 'Alice',' Smith', '9876543210', 'asmith@example.com', 'pass456', 1, 2, 2);
+INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('asmith', 'Alice Smith', '9876543210', 'asmith@example.com', 'pass456', 1, 2, 2);
 
-INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('bgarcia', 'Bob',' Garcia', '1122334455', 'bgarcia@example.com', 'secret789', 1, 3, 3);
+INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('bgarcia', 'Bob Garcia', '1122334455', 'bgarcia@example.com', 'secret789', 1, 3, 3);
 
-INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('juanpedro', 'Juan',' Pedro', '1122334465', 'juanpedro@example.com', 'secret7899', 1, 3, 3);
+INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('juanpedro', 'Juan Pedro', '1122334465', 'juanpedro@example.com', 'secret7899', 1, 3, 3);
 
-INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('juanpedro2', 'Juancito',' Pedrito', '1122334475', 'juanpedro2@example.com', 'secret7898', 1, 3, 3);
+INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('juanpedro2', 'Juancito  Pedrito', '1122334475', 'juanpedro2@example.com', 'secret7898', 1, 3, 3);
 GO
 
 -- Insertar permisos
@@ -547,7 +504,7 @@ BEGIN
         t.idDepartamento,
         t.idResponsable,
         u.nombre AS nombreUsuario,
-        d.nombre AS nombreDepartamento,
+        d.nombreDepartamento,
         r.nombre AS nombreResponsable
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
@@ -582,7 +539,7 @@ BEGIN
         t.detalleTecnico,
         u.nombreCompleto AS nombreUsuario,
         COALESCE(r.nombreCompleto, 'Sin asignar') AS nombreResponsable,
-        d.nombre AS nombreDepartamento
+        d.nombreDepartamento
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
     INNER JOIN Departamento d ON t.idDepartamento = d.idDepartamento
@@ -609,7 +566,7 @@ BEGIN
         t.detalleTecnico,
         u.nombreCompleto AS nombreUsuario,
         COALESCE(r.nombreCompleto, 'Sin asignar') AS nombreResponsable,
-        d.nombre AS nombreDepartamento
+        d.nombreDepartamento
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
     LEFT JOIN Usuario r 
@@ -781,7 +738,7 @@ BEGIN
         t.idDepartamento,
         t.idResponsable,
         u.nombre AS nombreUsuario,
-        d.nombre AS nombreDepartamento,
+        d.nombreDepartamento,
         r.nombre AS nombreResponsable
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario

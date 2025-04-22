@@ -35,7 +35,7 @@ namespace ActivosAPI.Controllers
             }
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
-                var result = context.Query<ActivosModel>("SPP_ListadoActivo",
+                var result = context.Query<ActivosModel>("SP_ListadoActivo",
                     new { idDepartamento },
                     commandType: CommandType.StoredProcedure).ToList();
 
