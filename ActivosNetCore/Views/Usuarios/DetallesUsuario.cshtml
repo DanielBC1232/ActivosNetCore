@@ -1,0 +1,120 @@
+﻿@model UsuarioModel;
+
+<div class="content-wrap mt-5 p-3">
+    <div class="main">
+        <div class="container-fluid overflow-hidden">
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="card-header bg-secondary"><h3 class="text-white">Detalles</h3></div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="row g-5 p-3 mb-4 border-bottom">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Usuario:</label>
+                                        <input type="text" class="form-control" asp-for="usuario" placeholder="" readonly />
+
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Nombre:</label>
+                                        <input type="text" class="form-control" asp-for="nombreCompleto" placeholder="" readonly />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Cedula:</label>
+                                        <input type="text" class="form-control" asp-for="cedula" placeholder="" readonly />
+                                    </div>
+                                </div>
+                                <div class="col-md-6 d-flex flex-column">
+                                    <div class="mb-3">
+                                        <label class="form-label">correo:</label>
+                                        <input type="email" class="form-control" asp-for="correo" placeholder="" readonly />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="idDepartamento" class="form-label">Departamento:</label>
+                                        <select asp-for="idDepartamento" id="departamentoFilter" class="form-control">
+                                            <option id="departamentoFilter" value="0">Seleccionar...</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>Rol</strong></label>
+                                        <select asp-for="idRol" class="form-control">
+                                            <option selected value="">Seleccione...</option>
+                                            <option value="1">Administrador</option>
+                                            <option value="2">Usuario</option>
+                                            <option value="3">Soporte</option>
+                                        </select>
+                                    </div>
+                                    <div class="d-grid gap-5 align-self-end mt-3 row">
+                                        <div class="col-6">
+                                            <form asp-action="EliminarUsuario" asp-controller="Usuarios">
+                                                <input type="hidden" asp-for="idUsuario">
+                                                <button type="submit" class="btn btn-dark" id="btnEliminar">Eliminar</button>
+                                            </form>
+                                        </div>
+                                        <div class="col-6">
+                                            <a type="button" class="btn btn-secondary text-white" href="@Url.Action("EditarUsuario","Usuarios", new { idUsuario = Model.idUsuario})">Editar</a>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function() {
+
+        $('#departamentoFilter, #rolFilter').select2({
+                placeholder: function(){
+                  return $(this).find('option:selected').text();
+                },
+                allowClear: false,
+                width: '100%'
+              });
+              function parseOrZero(val) {
+                return val && val !== "" ? parseInt(val, 10) : 0;
+              }
+              function cargarDepartamentos() {
+                const $sel = $('#departamentoFilter');
+                const pre = parseOrZero($sel.data('selected'));
+
+                // reset
+                $sel.empty()
+                    .append(`<option value="0"${pre===0?' selected':''}>Seleccionar</option>`);
+
+                $.ajax({
+                  url: '@Url.Action("ObtenerListaDepartamento", "Login")',
+                  type: 'GET',
+                  success: function (items) {
+                    items.forEach(function (d) {
+                      const sel = pre === d.idDepartamento ? ' selected' : '';
+                      $sel.append(`<option value="${d.idDepartamento}"${sel}>${d.nombreDepartamento}</option>`);
+                    });
+                    // refresca Select2
+                    $sel.trigger('change');
+                  },
+                  error: function () {
+                    console.error('Error al cargar departamentos');
+                  }
+                });
+              }
+            cargarDepartamentos();
+
+
+        $("#btnEliminar").click(function (e) {
+            var confirmar = confirm("¿Estás seguro de que deseas eliminar este activo?");
+            if (confirmar) {
+                $("form").submit();
+            } else {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+
+
+

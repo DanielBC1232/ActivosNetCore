@@ -52,7 +52,6 @@
                                 <th>Rol</th>
                                 <th>Correo</th>
                                 <th>Acciones</th>
-
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -111,14 +110,14 @@
             };
             
             $.ajax({
-              url: '@Url.Action("ObtenerUsuarios", "Login")',
+              url: '@Url.Action("ObtenerUsuarios", "Usuarios")',
               type: 'POST',
               data: filtros,
               success: function (users) {
                 const $tb = $('#usuariosTable tbody').empty();
                 if (users && users.length) {
                   users.forEach(u => {
-                    const detallesUrl = "@Url.Action("DetallesUsuarios", "Login")" + "?idUsuario=" + u.idUsuario;
+                    const detallesUrl = "@Url.Action("DetallesUsuario", "Usuarios")" + "?idUsuario=" + u.idUsuario;
                     $tb.append(`
                       <tr>
                         <td>${u.nombreCompleto}</td>
@@ -127,7 +126,7 @@
                         <td>${u.tipo}</td>
                         <td>${u.correo}</td>
                         <td>
-                        <a class="btn btn-primary text-white" href="${detallesUrl}">Detalles</a>
+                            <a class="btn btn-primary text-white" href="${detallesUrl}">Detalles</a>
                         </td>
 
                       </tr>

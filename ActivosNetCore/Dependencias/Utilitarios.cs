@@ -34,6 +34,27 @@ namespace ActivosNetCore.Dependencias
             }
         }
 
+        public UsuarioModel? ObtenerInfoUsuario(int idUsuario)
+        {
+            using (var api = _httpClient.CreateClient())
+            {
+                api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessor.HttpContext!.Session.GetString("Token"));
+                var url = _configuration.GetSection("Variables:urlApi").Value + $"Usuarios/DetallesUsuario?idUsuario=" + idUsuario;
+                var response = api.GetAsync(url).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+                    if (result != null && result.Indicador)
+                    {
+
+                        return JsonSerializer.Deserialize<UsuarioModel>((JsonElement)result.Datos!)!;
+                    }
+                }
+            }
+            return null;
+        }
 
         public ActivosModel? ObtenerInfoActivo(int idActivo)
         {

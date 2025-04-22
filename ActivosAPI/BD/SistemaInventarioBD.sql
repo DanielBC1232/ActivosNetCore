@@ -385,6 +385,31 @@ AS BEGIN
 END;
 GO
 
+--READ (Detalle USUARIO)
+CREATE OR ALTER PROCEDURE SP_DetallesUsuario(
+@idUsuario INT
+)
+AS
+BEGIN
+
+	SELECT 
+		U.idUsuario,
+		U.usuario,
+		U.nombreCompleto,
+		U.cedula,
+		U.correo,
+		D.idDepartamento,
+		D.nombreDepartamento,
+		R.idRol,
+		R.tipo
+	FROM Usuario U
+	INNER JOIN Departamento D ON D.idDepartamento = U.idDepartamento
+	INNER JOIN Rol R ON R.idRol = U.idRol
+	WHERE U.idUsuario = @idUsuario
+
+END;
+GO
+
 --Inserts de prueba
 INSERT INTO Departamento (nombreDepartamento) VALUES ('Administración');
 INSERT INTO Departamento (nombreDepartamento) VALUES ('Tecnología');
