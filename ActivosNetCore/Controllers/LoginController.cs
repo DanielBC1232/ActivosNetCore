@@ -64,9 +64,11 @@ namespace ActivosNetCore.Controllers
                     if (result != null && result.Indicador)
                     {
                         var datosResult = JsonSerializer.Deserialize<UsuarioModel>((JsonElement)result.Datos!);
+                        HttpContext.Session.SetInt32("UserId", datosResult.idUsuario ?? 0);
                         HttpContext.Session.SetString("Usuario", datosResult!.usuario!);
                         HttpContext.Session.SetString("Rol", datosResult!.tipo!);//Rol => /Administrador/Usuario/Soporte
                         HttpContext.Session.SetString("Token", datosResult!.Token!);
+
 
                         return RedirectToAction("ListaActivos", "Activos");
                     }

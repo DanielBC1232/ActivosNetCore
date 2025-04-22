@@ -11,6 +11,8 @@ namespace ActivosNetCore.Dependencias
 
         TicketModel? ObtenerInfoTicket(int idTicket);
 
+        MantenimientoModel? ObtenerInfoMantenimiento(int idMantenimiento);
+
         string Encrypt(string texto);
 
         HttpResponseMessage ObtenerListaDepartamento();

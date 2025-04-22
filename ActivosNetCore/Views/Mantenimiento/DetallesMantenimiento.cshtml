@@ -1,0 +1,104 @@
+﻿@model ActivosNetCore.Models.MantenimientoModel
+
+@{
+    ViewData["Title"] = "Detalles del Mantenimiento";
+}
+
+<div class="content-wrap mt-5 p-3">
+    <div class="main">
+        <div class="container-fluid overflow-hidden">
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="card-header bg-secondary">
+                        <h3 class="text-white">Detalles del Mantenimiento</h3>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <!-- No necesitamos formulario si es solo lectura -->
+                            <div class="row g-5 p-3 mb-4 border-bottom">
+                                <!-- Columna izquierda -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">ID Mantenimiento:</label>
+                                        <input asp-for="IdMantenimiento" class="form-control" readonly />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Fecha:</label>
+                                        <input asp-for="Fecha" class="form-control" readonly />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Detalle:</label>
+                                        <textarea asp-for="Detalle" class="form-control" rows="3" readonly></textarea>
+                                    </div>
+                                </div>
+                                <!-- Columna derecha -->
+                                <div class="col-md-6 d-flex flex-column">
+                                    <div class="mb-3">
+                                        <label class="form-label">Estado:</label>
+                                        <input type="text"
+                                               class="form-control"
+                                               readonly
+                                               value="@(Model.Estado ? "Activo" : "Inactivo")" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Asignado a:</label>
+                                        <input type="text"
+                                               class="form-control"
+                                               readonly
+                                               asp-for="NombreResponsable" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Creado por:</label>
+                                        <input type="text"
+                                               class="form-control"
+                                               readonly
+                                               asp-for="NombreUsuario" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Activo:</label>
+                                        <input type="text"
+                                               class="form-control"
+                                               readonly
+                                               asp-for="NombreActivo" />
+                                    </div>
+                                    <!-- Botones de acción -->
+                                    <div class="d-grid gap-5 align-self-end mt-3 row">
+                                        <div class="col-4">
+                                            <form asp-action="EliminarActivo" asp-controller="Mantenimiento" method="post">
+                                                <input type="hidden" asp-for="IdMantenimiento" />
+                                                <button type="submit" class="btn btn-dark" id="btnEliminar">Eliminar</button>
+                                            </form>
+                                        </div>
+                                        <div class="col-4">
+                                            <a asp-action="EditarMantenimiento"
+                                               asp-controller="Mantenimiento"
+                                               asp-route-idMantenimiento="@Model.IdMantenimiento"
+                                               class="btn btn-secondary">
+                                                Editar
+                                            </a>
+                                        </div>
+                                        <div class="col-4">
+                                            <a asp-action="ListaMantenimiento"
+                                               asp-controller="Mantenimiento"
+                                               class="btn btn-secondary">
+                                                Volver
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#btnEliminar").click(function (e) {
+        if (!confirm("¿Estás seguro de que deseas eliminar este mantenimiento?")) {
+            e.preventDefault();
+        }
+    });
+</script>

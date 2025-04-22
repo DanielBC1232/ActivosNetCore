@@ -9,16 +9,30 @@ CREATE TABLE Rol (
 );
 
 CREATE TABLE Usuario (
-    idUsuario INT PRIMARY KEY IDENTITY(1,1),
-    usuario VARCHAR(100),
+    idUsuario INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+    usuario VARCHAR(100) NOT NULL,
     nombre VARCHAR(100),
     apellido VARCHAR(100),
-    cedula VARCHAR(20),
-    correo VARCHAR(100),
-    contrasenia VARCHAR(100),
-    estado BIT,
-    idDepartamento INT FOREIGN KEY REFERENCES Departamento(idDepartamento),
-    idRol INT FOREIGN KEY REFERENCES Rol(idRol)
+    cedula VARCHAR(20) NOT NULL,
+    correo VARCHAR(100) UNIQUE NOT NULL,
+    contrasenna NVARCHAR(256) NOT NULL,
+    estado BIT DEFAULT 1 NOT NULL,
+    idDepartamento INT FOREIGN KEY REFERENCES Departamento(idDepartamento) NOT NULL,
+    idRol INT FOREIGN KEY REFERENCES Rol(idRol) NOT NULL
+);
+GO
+
+CREATE TABLE Usuario (
+    idUsuario INT PRIMARY KEY IDENTITY(1,1)NOT NULL,
+    usuario VARCHAR(100) NOT NULL,
+    nombre VARCHAR(100),
+    apellido VARCHAR(100),
+    cedula VARCHAR(20)NOT NULL,
+    correo VARCHAR(100)NOT NULL,
+    contrasenia VARCHAR(100)NOT NULL,
+    estado BIT NOT NULL,
+    idDepartamento INT FOREIGN KEY REFERENCES Departamento(idDepartamento) NOT NULL,
+    idRol INT FOREIGN KEY REFERENCES Rol(idRol) NOT NULL
 );
 
 CREATE TABLE Permiso (

@@ -99,6 +99,27 @@ namespace ActivosNetCore.Dependencias
             return null;
         }
 
+        public MantenimientoModel? ObtenerInfoMantenimiento(int idMantenimiento)
+        {
+            using (var api = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlApi").Value + $"Mantenimiento/DetallesMantenimiento?idMantenimiento=" + idMantenimiento;
+                var response = api.GetAsync(url).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+                    if (result != null && result.Indicador)
+                    {
+
+                        return JsonSerializer.Deserialize<MantenimientoModel>((JsonElement)result.Datos!)!;
+                    }
+                }
+            }
+            return null;
+        }
+
 
 
         #region Usuarios

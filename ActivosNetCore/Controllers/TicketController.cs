@@ -46,7 +46,11 @@ namespace ActivosNetCore.Controllers
         [HttpGet]
         public IActionResult AgregarTicket()
         {
-            return View();
+            // Obtener ID de usuario desde sesión
+            var model = new TicketModel();
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            model.IdUsuario = userId ?? 1;
+            return View(model);
         }
 
         [HttpPost]
@@ -78,39 +82,54 @@ namespace ActivosNetCore.Controllers
             return ticket != null
                 ? View(ticket)
                 : NotFound("Ticket no encontrado");
+
         }
 
 
         [HttpGet]
-        public IActionResult EditarTicket(int idTicket)
+        public async Task<IActionResult> EditarTicket(int idTicket)
         {
+            var ticket = _utilitarios.ObtenerInfoTicket(idTicket);
+            if (ticket?.IdTicket == null)
+                return NotFound();
 
-            var response = _utilitarios.ObtenerInfoTicket(idTicket) ?? new TicketModel();
-            if (response == null)
-            {
-                return NotFound("No se encontró el ticket.");
-            }
-            return View(response);
+            // 1) Obtengo la lista de soportes
+            var client = _httpClient.CreateClient();
+            var resp = await client.GetAsync(_configuration["Variables:urlApi"] + "Ticket/ListaSoportes");
+            var soportes = resp.IsSuccessStatusCode
+                ? await resp.Content.ReadFromJsonAsync<List<UsuarioModel>>()
+                : new List<UsuarioModel>();
+
+            // 2) La pongo en ViewBag usando exactamente "idUsuario" y "nombreCompleto"
+            ViewBag.Responsables = new SelectList(
+                soportes,
+                "idUsuario",       // Valor de cada option
+                "nombreCompleto",  // Texto de cada option
+                ticket.IdResponsable
+            );
+
+            return View(ticket);
         }
 
         [HttpPost]
-        public IActionResult EditarTicket(TicketModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditarTicket(TicketModel model)
         {
+            var soportes = await _httpClient.CreateClient()
+                .GetFromJsonAsync<List<UsuarioModel>>(_configuration["Variables:urlApi"] + "Ticket/ListaSoportes");
+            ViewBag.Responsables = new SelectList(soportes, "idUsuario", "nombreCompleto", model.IdResponsable);
+
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
-            using (var api = _httpClient.CreateClient())
-            {
-                var url = _configuration.GetSection("Variables:urlApi").Value + "Ticket/EditarTicket";
-               
-                var result = api.PutAsJsonAsync(url, model).Result;
-                if (result.IsSuccessStatusCode)
-                {
-                    return RedirectToAction("ListaTicket", "Ticket");
-                }
-                return View();
-            }
+
+            // aquí model.IdResponsable ya viene del dropdown
+            var api = _httpClient.CreateClient();
+            var url = _configuration["Variables:urlApi"] + "Ticket/EditarTicket";
+            var result = await api.PutAsJsonAsync(url, model);
+            if (!result.IsSuccessStatusCode)
+                return View(model);
+
+            return RedirectToAction("ListaTicket");
         }
 
 

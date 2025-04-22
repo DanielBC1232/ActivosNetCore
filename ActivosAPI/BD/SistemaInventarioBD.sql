@@ -4,7 +4,7 @@ GO
 
 CREATE TABLE Departamento (
     idDepartamento INT PRIMARY KEY IDENTITY(1,1),
-    nombreDepartamento VARCHAR(100)
+    nombre VARCHAR(100)
 );
 GO
 
@@ -15,17 +15,17 @@ CREATE TABLE Rol (
 GO
 
 CREATE TABLE Usuario (
-    idUsuario INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+    idUsuario INT PRIMARY KEY IDENTITY(1,1)NOT NULL,
     usuario VARCHAR(100) NOT NULL,
-    nombreCompleto VARCHAR(100) NOT NULL,
-    cedula VARCHAR(20) NOT NULL,
-    correo VARCHAR(100) UNIQUE NOT NULL,
+    nombreCompleto VARCHAR(100),
+    cedula VARCHAR(20)NOT NULL,
+    correo VARCHAR(100)NOT NULL,
     contrasenna NVARCHAR(256) NOT NULL,
-    estado BIT DEFAULT 1 NOT NULL,
+    estado BIT NOT NULL,
     idDepartamento INT FOREIGN KEY REFERENCES Departamento(idDepartamento) NOT NULL,
     idRol INT FOREIGN KEY REFERENCES Rol(idRol) NOT NULL
 );
-GO
+
 select * from Usuario
 CREATE TABLE Permiso (
     idPermiso INT PRIMARY KEY IDENTITY(1,1),
@@ -76,6 +76,7 @@ CREATE TABLE Ticket (
     idDepartamento INT FOREIGN KEY REFERENCES Departamento(idDepartamento)
 );
 GO
+
 --Procedimientos almacenados
 --Crear ticket 
 CREATE OR ALTER PROCEDURE sp_CrearTicket
@@ -91,30 +92,41 @@ END;
 GO
 
 --Crear ticket ACTUALIZADO
-CREATE OR ALTER PROCEDURE sp_CrearTicket
-    @urgencia VARCHAR(50),
-    @detalle VARCHAR(255),
-    @idUsuario INT,
+CREATE OR ALTER PROCEDURE spp_CrearTicket
+    @urgencia     VARCHAR(50),
+    @detalle      VARCHAR(255),
+    @idUsuario    INT,
     @idDepartamento INT
 AS
 BEGIN
-	DECLARE @idResponsable INT
+    DECLARE @idResponsable INT;
+    DECLARE @rolSoporte    INT;
 
-	SELECT TOP 1 @idResponsable = u.idUsuario
-	FROM Usuario u
-	LEFT JOIN Ticket t ON u.idUsuario = t.idResponsable AND t.solucionado = 0
-	WHERE u.idRol = (SELECT idRol FROM Rol WHERE tipo = 'Soporte')
-	GROUP BY u.idUsuario
-	ORDER BY COUNT(t.idTicket) ASC;
+    -- Asegúrate de que solo trae uno
+    SELECT TOP 1 @rolSoporte = idRol
+    FROM Rol
+    WHERE tipo = 'Soporte';
 
+    SELECT TOP 1 
+        @idResponsable = u.idUsuario
+    FROM Usuario u
+    LEFT JOIN Ticket t 
+        ON u.idUsuario = t.idResponsable 
+       AND t.solucionado = 0
+    WHERE u.idRol = @rolSoporte
+    GROUP BY u.idUsuario
+    ORDER BY COUNT(t.idTicket) ASC;
 
-    INSERT INTO Ticket (urgencia, detalle, fecha, solucionado, estado, idResponsable,idUsuario, idDepartamento)
-    VALUES (@urgencia, @detalle, GETDATE(), 0, 1, @idResponsable,@idUsuario, @idDepartamento)
-END;
+    INSERT INTO Ticket 
+        (urgencia, detalle, fecha, solucionado, estado, idResponsable, idUsuario, idDepartamento)
+    VALUES 
+        (@urgencia, @detalle, GETDATE(), 0, 1, @idResponsable, @idUsuario, @idDepartamento);
+END
 GO
 
+
 --Consultar ticket por id
-CREATE OR ALTER PROCEDURE sp_ConsultarTicket
+CREATE OR ALTER PROCEDURE spp_ConsultarTicket
     @IdTicket INT
 AS
 BEGIN
@@ -129,9 +141,9 @@ BEGIN
         t.idUsuario,
         t.idDepartamento,
         t.idResponsable,
-        u.nombre AS nombreUsuario,
+        u.nombreCompleto AS nombreUsuario,
         d.nombre AS nombreDepartamento,
-        r.nombre AS nombreResponsable
+        r.nombreCompleto AS nombreResponsable
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
     INNER JOIN Departamento d ON t.idDepartamento = d.idDepartamento
@@ -141,7 +153,7 @@ END;
 GO
 
 --Consultar todos los tickets
-CREATE OR ALTER PROCEDURE sp_ConsultarTodosTickets
+CREATE OR ALTER PROCEDURE spp_ConsultarTodosTickets
 AS
 BEGIN
     SELECT 
@@ -150,35 +162,50 @@ BEGIN
 		t.idUsuario,
 		t.idDepartamento,
 		t.idResponsable,
-        u.nombre AS nombreUsuario,
+        u.nombreCompleto AS nombreUsuario,
         d.nombre AS nombreDepartamento,
-        r.nombre AS nombreResponsable
+        r.nombreCompleto AS nombreResponsable
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
     INNER JOIN Departamento d ON t.idDepartamento = d.idDepartamento
     LEFT JOIN Usuario r ON t.idResponsable = r.idUsuario
     ORDER BY t.fecha DESC
 END
-GO
+
+EXEC spp_ConsultarTodosTickets;
+
 
 --Actualizar ticket
-CREATE OR ALTER PROCEDURE sp_ActualizarTicket
-    @idTicket INT,
-	@urgencia VARCHAR(50),
-    @solucionado BIT,
-    @detalleTecnico VARCHAR(255),
-    @idResponsable INT
+CREATE OR ALTER PROCEDURE spp_ActualizarTicket
+  @idTicket INT,
+  @urgencia VARCHAR(50),
+  @solucionado BIT,
+  @detalleTecnico VARCHAR(255),
+  @idResponsable INT = NULL
 AS
 BEGIN
-    UPDATE Ticket
-    SET 
-		urgencia = @urgencia,
-		solucionado = @solucionado,
-        detalleTecnico = @detalleTecnico,
-        estado = CASE WHEN @solucionado = 1 THEN 0 ELSE 1 END,
-        idResponsable = @idResponsable
-    WHERE idTicket = @idTicket
+  UPDATE Ticket
+  SET urgencia       = @urgencia,
+      solucionado    = @solucionado,
+      detalleTecnico = @detalleTecnico,
+      estado         = CASE WHEN @solucionado = 1 THEN 0 ELSE 1 END,
+      idResponsable  = @idResponsable
+  WHERE idTicket = @idTicket;
 END
+
+-- Listado de Soportes
+CREATE OR ALTER PROCEDURE sp_ListarSoportes
+AS
+BEGIN
+    SELECT 
+      u.idUsuario,
+      u.nombreCompleto
+    FROM Usuario u
+    INNER JOIN Rol r ON u.idRol = r.idRol
+    WHERE r.tipo = 'Soporte'
+      AND u.estado = 1;
+END
+GO
 
 --Eliminar ticket
 CREATE PROCEDURE sp_EliminarTicket
@@ -227,13 +254,12 @@ BEGIN
 	INNER JOIN Usuario R ON R.idUsuario = A.idResponsable
 	WHERE A.idActivo = @idActivo
 	--AND estado = 1;
-
 END;
 GO
 
 --READ (Listado)
-CREATE OR ALTER PROCEDURE SP_ListadoActivo(
-@idDepartamento INT NULL --SelectDepartamento
+CREATE OR ALTER PROCEDURE SPP_ListadoActivo(
+@idDepartamento INT NULL
 )
 AS
 BEGIN
@@ -248,10 +274,10 @@ SET @SQL =
 	A.serie,
 	A.idDepartamento as idDepA,
 	D.idDepartamento as idDepD,
-	D.nombreDepartamento,
+	D.nombre,
 	A.idResponsable as idResponsable,
 	U.idUsuario as idResR,
-	U.nombreCompleto as nombreResponsable
+	U.nombre as nombreResponsable
 	FROM Activo A
 	INNER JOIN Departamento D ON D.idDepartamento = A.idDepartamento
 	INNER JOIN Usuario U ON U.idUsuario = A.idResponsable
@@ -267,9 +293,10 @@ SET @SQL =
 	EXEC sp_executesql @SQL,
 	N'@idDepartamento INT',
 	@idDepartamento = @idDepartamento;
-
 END;
 GO
+
+Exec SP_ListadoActivo 1
 
 --UPDATE
 CREATE OR ALTER PROCEDURE SP_EditarActivo(
@@ -346,7 +373,7 @@ GO
 
 CREATE OR ALTER PROCEDURE SP_ObtenerListaDepartamento
 AS BEGIN
-	SELECT idDepartamento,nombreDepartamento from Departamento
+	SELECT idDepartamento,nombre from Departamento
 END;
 GO
 
@@ -364,7 +391,6 @@ AS BEGIN
 	INNER JOIN Rol R ON R.idRol = U.idRol
 	WHERE U.correo = @correo
 	AND contrasenna = @contrasenna
-
 END;
 GO
 
@@ -379,12 +405,25 @@ CREATE OR ALTER PROCEDURE SP_RegistrarCuenta
 @idRol INT
 AS BEGIN
 
-	INSERT INTO Usuario(usuario,nombreCompleto,cedula,correo,contrasenna,idDepartamento,idRol)
-	VALUES (@usuario,@nombreCompleto,@cedula,@correo,@contrasenna,@idDepartamento,@idRol)
+	INSERT INTO Usuario(usuario,nombreCompleto,cedula,correo,contrasenna,idDepartamento,idRol,estado)
+	VALUES (@usuario,@nombreCompleto,@cedula,@correo,@contrasenna,@idDepartamento,@idRol,1)
 
 END;
 GO
+/*
+--Registrar cuenta
+CREATE OR ALTER PROCEDURE SP_RegistrarCuenta
+@usuario VARCHAR(100),
+@nombre VARCHAR(100),
+@apellido VARCHAR(100),
+@cedula VARCHAR(10),
+@correo VARCHAR(50),
+@contrasenna NVARCHAR(256),
+@idDepartamento INT,
+@idRol INT
+AS BEGIN
 
+<<<<<<< Updated upstream
 --READ (Detalle USUARIO)
 CREATE OR ALTER PROCEDURE SP_DetallesUsuario(
 @idUsuario INT
@@ -410,10 +449,18 @@ BEGIN
 END;
 GO
 
+=======
+	INSERT INTO Usuario(usuario,nombre, apellido,cedula,correo,contrasenna,idDepartamento,idRol)
+	VALUES (@usuario,@nombre, @apellido,@cedula,@correo,@contrasenna,@idDepartamento,@idRol)
+
+END;
+GO
+*/
+>>>>>>> Stashed changes
 --Inserts de prueba
-INSERT INTO Departamento (nombreDepartamento) VALUES ('Administración');
-INSERT INTO Departamento (nombreDepartamento) VALUES ('Tecnología');
-INSERT INTO Departamento (nombreDepartamento) VALUES ('Recursos Humanos');
+INSERT INTO Departamento (nombre) VALUES ('Administración');
+INSERT INTO Departamento (nombre) VALUES ('Tecnología');
+INSERT INTO Departamento (nombre) VALUES ('Recursos Humanos');
 select * from Departamento
 -- Insertar roles
 INSERT INTO Rol (tipo) VALUES ('Administrador');
@@ -422,20 +469,20 @@ INSERT INTO Rol (tipo) VALUES ('Soporte');
 Select * from Rol
 GO
 -- Insertar usuarios
-INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('jdoe', 'John Doe', '1234567890', 'jdoe@example.com', 'password123', 1, 1, 1);
+INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('jdoe', 'John,',' Doe', '1234567890', 'jdoe@example.com', 'password123', 1, 1, 1);
 
-INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('asmith', 'Alice Smith', '9876543210', 'asmith@example.com', 'pass456', 1, 2, 2);
+INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('asmith', 'Alice',' Smith', '9876543210', 'asmith@example.com', 'pass456', 1, 2, 2);
 
-INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('bgarcia', 'Bob Garcia', '1122334455', 'bgarcia@example.com', 'secret789', 1, 3, 3);
+INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('bgarcia', 'Bob',' Garcia', '1122334455', 'bgarcia@example.com', 'secret789', 1, 3, 3);
 
-INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('juanpedro', 'Juan Pedro', '1122334465', 'juanpedro@example.com', 'secret7899', 1, 3, 3);
+INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('juanpedro', 'Juan',' Pedro', '1122334465', 'juanpedro@example.com', 'secret7899', 1, 3, 3);
 
-INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('juanpedro2', 'Juancito Pedrito', '1122334475', 'juanpedro2@example.com', 'secret7898', 1, 3, 3);
+INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('juanpedro2', 'Juancito',' Pedrito', '1122334475', 'juanpedro2@example.com', 'secret7898', 1, 3, 3);
 GO
 
 -- Insertar permisos
@@ -509,7 +556,7 @@ BEGIN
     WHERE 
         -- Filtrado por estado:
         (@estado = 'Todos' 
-         OR (@estado = 'Solucionados' AN t.solucionado = 1)
+         OR (@estado = 'Solucionados' AND t.solucionado = 1)
          OR (@estado = 'NoSolucionados' AND t.solucionado = 0))
         -- Filtrado por urgencia:
         AND (@urgencia = 'Todos' OR t.urgencia = @urgencia)
@@ -518,7 +565,7 @@ END;
 GO
 
 -- Detalle de Ticket
-CREATE OR ALTER PROCEDURE SP_DetallesTicket
+CREATE OR ALTER PROCEDURE SPP_DetallesTicket
     @idTicket INT
 AS
 BEGIN
@@ -533,8 +580,35 @@ BEGIN
 		t.idDepartamento,
 		t.idResponsable,
         t.detalleTecnico,
-        u.nombre AS nombreUsuario,
-        COALESCE(r.nombre, 'Sin asignar') AS nombreResponsable,
+        u.nombreCompleto AS nombreUsuario,
+        COALESCE(r.nombreCompleto, 'Sin asignar') AS nombreResponsable,
+        d.nombre AS nombreDepartamento
+    FROM Ticket t
+    INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
+    INNER JOIN Departamento d ON t.idDepartamento = d.idDepartamento
+    LEFT JOIN Usuario r ON t.idResponsable = r.idUsuario
+    WHERE t.idTicket = @idTicket;
+END
+
+/*
+-- Detalle de Ticket CON ROL DE SOPORTE
+CREATE OR ALTER PROCEDURE SPP_DetallesTicket
+    @idTicket INT
+AS
+BEGIN
+    SELECT 
+        t.idTicket,
+        t.urgencia,
+        t.detalle,
+        t.fecha,
+        t.solucionado,
+		t.estado,
+		t.idUsuario,
+		t.idDepartamento,
+		t.idResponsable,
+        t.detalleTecnico,
+        u.nombreCompleto AS nombreUsuario,
+        COALESCE(r.nombreCompleto, 'Sin asignar') AS nombreResponsable,
         d.nombre AS nombreDepartamento
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
@@ -543,9 +617,209 @@ BEGIN
         AND r.idRol = (SELECT idRol FROM Rol WHERE tipo = 'Soporte')
     INNER JOIN Departamento d ON t.idDepartamento = d.idDepartamento
     WHERE t.idTicket = @idTicket;
-END
-
-Exec SP_DetallesTicket 11;
+END*/
+Exec SPP_DetallesTicket 1;
 
 
 Select * from Ticket
+
+--------- MANTENIMIENTO ----------
+
+--Procedimientos almacenados
+--Crear Mantenimiento
+CREATE OR ALTER PROCEDURE SP_CrearMantenimiento
+    @detalle       VARCHAR(255),
+    @idActivo      INT,
+    @idUsuario     INT
+AS
+BEGIN
+    DECLARE @idResponsable INT;
+    DECLARE @rolSoporte    INT;
+
+    -- Obtener el ID del rol de Soporte
+    SELECT TOP 1 @rolSoporte = idRol
+    FROM Rol
+    WHERE tipo = 'Soporte';
+
+    -- Asignar al soporte con menos mantenimientos activos (estado = 1)
+    SELECT TOP 1 
+        @idResponsable = u.idUsuario
+    FROM Usuario u
+    LEFT JOIN Mantenimiento m 
+        ON u.idUsuario = m.idResponsable 
+        AND m.estado = 1
+    WHERE u.idRol = @rolSoporte
+    GROUP BY u.idUsuario
+    ORDER BY COUNT(m.idMantenimiento) ASC;
+
+    INSERT INTO Mantenimiento
+        (fecha, detalle, estado, idResponsable, idActivo, idUsuario)
+    VALUES
+        (CONVERT(date, GETDATE()), @detalle, 1, @idResponsable, @idActivo, @idUsuario);
+END;
+GO
+
+--Consultar ticket por id
+CREATE OR ALTER PROCEDURE sp_ConsultarMantenimiento
+    @IdMantenimiento INT
+AS
+BEGIN
+    SELECT 
+       m.idMantenimiento, m.fecha, m.detalle, m.estado,
+		m.idUsuario,
+		m.idActivo,
+		m.idResponsable,
+        u.nombre AS nombreUsuario,
+        a.nombreActivo AS nombreActivo,
+        r.nombre AS nombreResponsable
+    FROM Mantenimiento m
+    INNER JOIN Usuario u ON m.idUsuario = u.idUsuario
+    INNER JOIN Activo a ON m.idActivo = a.idActivo
+    LEFT JOIN Usuario r ON m.idResponsable = r.idUsuario
+    WHERE m.idMantenimiento = @IdMantenimiento
+END;
+GO
+
+--Consultar todos los tickets
+-- 1) Listar todos los mantenimientos con nombre completo de usuario y responsable
+CREATE OR ALTER PROCEDURE SP_ConsultarTodosMantenimientos
+AS
+BEGIN
+    SELECT 
+        m.idMantenimiento,
+        m.fecha,
+        m.detalle,
+        m.estado,
+        m.idUsuario,
+        u.nombreCompleto AS nombreUsuario,
+        m.idActivo,
+        a.nombreActivo,
+        m.idResponsable, r.nombreCompleto AS nombreResponsable
+    FROM Mantenimiento m
+    INNER JOIN Usuario u ON m.idUsuario        = u.idUsuario
+    INNER JOIN Activo  a ON m.idActivo         = a.idActivo
+    LEFT  JOIN Usuario r ON m.idResponsable    = r.idUsuario
+    ORDER BY m.fecha DESC;
+END;
+GO
+
+EXEC sp_ConsultarTodosMantenimientos;
+
+
+--Actualizar ticket
+CREATE OR ALTER PROCEDURE sp_ActualizarMantenimiento
+ @idMantenimiento INT,
+    @fecha           DATE,
+    @detalle         VARCHAR(255),
+    @estado          BIT,
+    @idResponsable   INT,
+    @idActivo        INT,
+    @idUsuario       INT
+AS
+BEGIN
+    UPDATE Mantenimiento
+    SET 
+        fecha         = @fecha,
+        detalle       = @detalle,
+        estado        = @estado,
+        idResponsable = @idResponsable,
+        idActivo      = @idActivo,
+        idUsuario     = @idUsuario
+    WHERE idMantenimiento = @idMantenimiento;
+END;
+GO
+
+
+CREATE OR ALTER PROCEDURE sp_ActualizarMantenimiento
+ @idMantenimiento INT,
+    @fecha           DATE,
+    @detalle         VARCHAR(255),
+    @estado          BIT,
+    @idResponsable   INT = NULL,
+    @idActivo        INT,
+    @idUsuario       INT
+AS
+BEGIN
+    UPDATE Mantenimiento
+    SET 
+        fecha         = @fecha,
+        detalle       = @detalle,
+        estado        = @estado,
+        idResponsable = @idResponsable,
+        idActivo      = @idActivo,
+        idUsuario     = @idUsuario
+    WHERE idMantenimiento = @idMantenimiento;
+END;
+GO
+
+
+
+CREATE OR ALTER PROCEDURE sp_EliminarMantenimiento
+    @idMantenimiento INT
+AS
+BEGIN
+    DELETE FROM Mantenimiento
+    WHERE idMantenimiento = @idMantenimiento;
+END;
+GO
+
+-- SP PARA FILTROS
+CREATE OR ALTER PROCEDURE sp_ConsultarTodosMantenimientosFiltro
+    @estado VARCHAR(50) = 'Todos',  -- 'Todos', 'Solucionados' o 'NoSolucionados'
+    @urgencia VARCHAR(50) = 'Todos'  -- 'Todos', 'Baja', 'Media', 'Alta'
+AS
+BEGIN
+    SELECT 
+        t.idTicket, 
+        t.urgencia, 
+        t.detalle, 
+        t.fecha, 
+        t.solucionado, 
+        t.estado,
+        t.detalleTecnico,
+        t.idUsuario,
+        t.idDepartamento,
+        t.idResponsable,
+        u.nombre AS nombreUsuario,
+        d.nombre AS nombreDepartamento,
+        r.nombre AS nombreResponsable
+    FROM Ticket t
+    INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
+    INNER JOIN Departamento d ON t.idDepartamento = d.idDepartamento
+    LEFT JOIN Usuario r ON t.idResponsable = r.idUsuario
+    WHERE 
+        -- Filtrado por estado:
+        (@estado = 'Todos' 
+         OR (@estado = 'Solucionados' AND t.solucionado = 1)
+         OR (@estado = 'NoSolucionados' AND t.solucionado = 0))
+        -- Filtrado por urgencia:
+        AND (@urgencia = 'Todos' OR t.urgencia = @urgencia)
+    ORDER BY t.fecha DESC;
+END;
+GO
+
+-- Detalle de Mantenimiento
+CREATE OR ALTER PROCEDURE SP_DetallesMantenimiento
+    @idMantenimiento INT
+AS
+BEGIN
+    SELECT 
+        m.idMantenimiento,
+        m.fecha,
+        m.detalle,
+        m.estado,
+        m.idUsuario,
+        u.nombreCompleto AS nombreUsuario,
+        m.idActivo,
+        a.nombreActivo,
+        m.idResponsable, r.nombreCompleto AS nombreResponsable
+    FROM Mantenimiento m
+    INNER JOIN Usuario u ON m.idUsuario        = u.idUsuario
+    INNER JOIN Activo  a ON m.idActivo         = a.idActivo
+    LEFT  JOIN Usuario r ON m.idResponsable    = r.idUsuario
+    WHERE m.idMantenimiento = @idMantenimiento;
+END;
+GO
+
+Exec SP_DetallesMantenimiento 1
+

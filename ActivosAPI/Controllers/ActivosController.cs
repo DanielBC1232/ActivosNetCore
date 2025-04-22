@@ -35,7 +35,7 @@ namespace ActivosAPI.Controllers
             }
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
-                var result = context.Query<ActivosModel>("SP_ListadoActivo",
+                var result = context.Query<ActivosModel>("SPP_ListadoActivo",
                     new { idDepartamento },
                     commandType: CommandType.StoredProcedure).ToList();
 
@@ -170,10 +170,7 @@ namespace ActivosAPI.Controllers
                     respuesta.Mensaje = "El activo no ha desactivado";
                     return StatusCode(500, respuesta);
                 }
-
             }
         }
-
-
     }
 }

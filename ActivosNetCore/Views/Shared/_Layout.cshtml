@@ -40,9 +40,13 @@
                     <li><a asp-controller="Ticket" asp-action="ListaTicket"><i class="ti-view-list-alt"></i>Lista de Ticketes</a></li>
                     <li><a asp-controller="Ticket" asp-action="AgregarTicket"><i class="ti-plus"></i>Crear Ticket</a></li>
                     <hr>
+                    <li class="label">Mantenimientos</li>
+                    <li><a asp-controller="Mantenimiento" asp-action="ListaMantenimiento"><i class="ti-view-list-alt"></i>Lista de Mantenimientos</a></li>
+                    <li><a asp-controller="Mantenimiento" asp-action="AgregarMantenimiento"><i class="ti-plus"></i>Solicitar Mantenimiento</a></li>
+                    <hr>
                     <li class="label">Historial</li>
                     <li><a href="#"><i class="ti-align-left"></i>Historial de Activos</a></li>
-                    <li><a href="#"><i class="ti-align-left"></i>Historial de Mantenimiento</a></li>
+                    <li><a asp-controller="Mantenimiento" asp-action="HistorialMantenimiento"><i class="ti-align-left"></i>Historial de Mantenimiento</a></li>
                     <li><a href="#"><i class="ti-align-left"></i>Historial de Responsables</a></li>
                     <hr>
                     <li class="label">Administrador</li>
