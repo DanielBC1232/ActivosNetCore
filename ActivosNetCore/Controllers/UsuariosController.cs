@@ -35,6 +35,19 @@ namespace ActivosNetCore.Controllers
         }
 
         [HttpGet]
+        public IActionResult EditarUsuario(int idUsuario)
+        {
+            var response = _utilitarios.ObtenerInfoUsuario(idUsuario) ?? new UsuarioModel();
+
+            if (response == null)
+            {
+                return NotFound("No se encontró el usuario.");
+            }
+
+            return View(response);
+        }
+
+        [HttpGet]
         public IActionResult ListaUsuarios()
         {
             var datos = new UsuarioModel

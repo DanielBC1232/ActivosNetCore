@@ -81,6 +81,8 @@ namespace ActivosAPI.Controllers
             }
         }
 
+
+
         [HttpPost]
         [Route("AgregarActivo")]
         public IActionResult AgregarActivo(ActivosModel model)

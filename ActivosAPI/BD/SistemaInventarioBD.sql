@@ -30,19 +30,6 @@ Go
 select * from Usuario
 GO
 
-CREATE TABLE Permiso (
-    idPermiso INT PRIMARY KEY IDENTITY(1,1),
-    tipoPermiso VARCHAR(100)
-);
-GO
-
-CREATE TABLE Usuario_Permiso (
-    id_Usuario_Permiso INT PRIMARY KEY IDENTITY(1,1),
-    idUsuario INT FOREIGN KEY REFERENCES Usuario(idUsuario),
-    idPermiso INT FOREIGN KEY REFERENCES Permiso(idPermiso)
-);
-GO
-
 CREATE TABLE Activo (
     idActivo INT PRIMARY KEY IDENTITY(1,1),
     nombreActivo VARCHAR(100),
@@ -299,8 +286,6 @@ SET @SQL =
 END;
 GO
 
-Exec SP_ListadoActivo 1
-
 --UPDATE
 CREATE OR ALTER PROCEDURE SP_EditarActivo(
 @idActivo INT,
@@ -414,6 +399,30 @@ AS BEGIN
 END;
 GO
 
+CREATE OR ALTER PROCEDURE SP_DetallesUsuario(
+@idUsuario INT
+)
+AS
+BEGIN
+
+	SELECT 
+		U.idUsuario,
+		U.usuario,
+		U.nombreCompleto,
+		U.cedula,
+		U.correo,
+		D.idDepartamento,
+		D.nombreDepartamento,
+		R.idRol,
+		R.tipo
+	FROM Usuario U
+	INNER JOIN Departamento D ON D.idDepartamento = U.idDepartamento
+	INNER JOIN Rol R ON R.idRol = U.idRol
+	WHERE U.idUsuario = @idUsuario
+
+END;
+GO
+
 --Inserts de prueba
 INSERT INTO Departamento (nombreDepartamento) VALUES ('Administración');
 INSERT INTO Departamento (nombreDepartamento) VALUES ('Tecnología');
@@ -442,17 +451,6 @@ INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estad
 VALUES ('juanpedro2', 'Juancito  Pedrito', '1122334475', 'juanpedro2@example.com', 'secret7898', 1, 3, 3);
 GO
 
--- Insertar permisos
-INSERT INTO Permiso (tipoPermiso) VALUES ('Crear');
-INSERT INTO Permiso (tipoPermiso) VALUES ('Editar');
-INSERT INTO Permiso (tipoPermiso) VALUES ('Eliminar');
-
--- Insertar usuario_permiso (relacionando usuarios con permisos)
-INSERT INTO Usuario_Permiso (idUsuario, idPermiso) VALUES (1, 1);
-INSERT INTO Usuario_Permiso (idUsuario, idPermiso) VALUES (1, 2);
-INSERT INTO Usuario_Permiso (idUsuario, idPermiso) VALUES (2, 2);
-INSERT INTO Usuario_Permiso (idUsuario, idPermiso) VALUES (3, 3);
-GO
 -- Insertar activos
 INSERT INTO Activo (nombreActivo, placa, serie, descripcion, estado, idDepartamento, idResponsable)
 VALUES ('Laptop Dell', 12345, 'SN12345', 'Laptop para uso general', 1, 2, 1);

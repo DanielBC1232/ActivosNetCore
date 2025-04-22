@@ -15,7 +15,7 @@ namespace ActivosAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsuariosController : Controller
+    public class UsuariosController : ControllerBase
     {
         private readonly IConfiguration _configuration;
         private readonly IUtilitarios _utilitarios;

@@ -30,19 +30,12 @@
                                         <input type="email" class="form-control" asp-for="correo" placeholder="" readonly />
                                     </div>
                                     <div class="mb-3">
-                                        <label for="idDepartamento" class="form-label">Departamento:</label>
-                                        <select asp-for="idDepartamento" id="departamentoFilter" class="form-control">
-                                            <option id="departamentoFilter" value="0">Seleccionar...</option>
-                                        </select>
+                                        <label class="form-label">Departamento:</label>
+                                        <input type="text" class="form-control" asp-for="nombreDepartamento" placeholder="" readonly />
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label"><strong>Rol</strong></label>
-                                        <select asp-for="idRol" class="form-control">
-                                            <option selected value="">Seleccione...</option>
-                                            <option value="1">Administrador</option>
-                                            <option value="2">Usuario</option>
-                                            <option value="3">Soporte</option>
-                                        </select>
+                                        <label class="form-label">Rol:</label>
+                                        <input type="text" class="form-control" asp-for="tipo" placeholder="" readonly />
                                     </div>
                                     <div class="d-grid gap-5 align-self-end mt-3 row">
                                         <div class="col-6">
@@ -52,7 +45,7 @@
                                             </form>
                                         </div>
                                         <div class="col-6">
-                                            <a type="button" class="btn btn-secondary text-white" href="@Url.Action("EditarUsuario","Usuarios", new { idUsuario = Model.idUsuario})">Editar</a>
+                                            <a type="button" class="btn btn-primary text-white" href="@Url.Action("EditarUsuario","Usuarios", new { idUsuario = Model.idUsuario})">Editar</a>
                                         </div>
                                     </div>
 
