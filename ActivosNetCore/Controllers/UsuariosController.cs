@@ -22,29 +22,47 @@ namespace ActivosNetCore.Controllers
         }
 
         [HttpGet]
-        public IActionResult DetallesUsuario(int idUsuario)
+        public IActionResult RegistrarCuenta()
         {
-            var response = _utilitarios.ObtenerInfoUsuario(idUsuario) ?? new UsuarioModel();
-
-            if (response == null)
-            {
-                return NotFound("No se encontró el usuario.");
-            }
-
-            return View(response);
+            return View();
         }
 
-        [HttpGet]
-        public IActionResult EditarUsuario(int idUsuario)
+        [HttpPost]
+        public IActionResult RegistrarCuenta(UsuarioModel model)
         {
-            var response = _utilitarios.ObtenerInfoUsuario(idUsuario) ?? new UsuarioModel();
-
-            if (response == null)
+            if (!ModelState.IsValid)
             {
-                return NotFound("No se encontró el usuario.");
+                ViewBag.Msj = "Datos incompletos";
+                Console.WriteLine(model.nombreCompleto);
+                return View();
             }
 
-            return View(response);
+            var datos = new
+            {
+                usuario = model.usuario,
+                nombreCompleto = model.nombreCompleto,
+                cedula = model.cedula,
+                correo = model.correo,
+                contrasenna = _utilitarios.Encrypt(model.contrasenna!),
+                idDepartamento = model.idDepartamento,
+                idRol = model.idRol
+            };
+
+            using (var api = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Usuarios/RegistrarCuenta";
+                var response = api.PostAsJsonAsync(url, datos).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    //retornar a listado usuarios
+                    return RedirectToAction("ListaUsuarios", "Usuarios");
+                }
+                else
+                    ViewBag.Msj = "No se pudo completar su petición";
+            }
+
+            return View();
         }
 
         [HttpGet]
@@ -88,48 +106,73 @@ namespace ActivosNetCore.Controllers
         }
 
         [HttpGet]
-        public IActionResult RegistrarCuenta()
+        public IActionResult DetallesUsuario(int idUsuario)
         {
-            return View();
+            var response = _utilitarios.ObtenerInfoUsuario(idUsuario) ?? new UsuarioModel();
+
+            if (response == null)
+            {
+                return NotFound("No se encontró el usuario.");
+            }
+
+            return View(response);
+        }
+
+        [HttpGet]
+        public IActionResult EditarUsuario(int idUsuario)
+        {
+            var response = _utilitarios.ObtenerInfoUsuario(idUsuario) ?? new UsuarioModel();
+
+            if (response == null)
+            {
+                return NotFound("No se encontró el usuario.");
+            }
+
+            return View(response);
+        }
+
+        //Editar usuario
+        [HttpPost]
+        public IActionResult EditarUsuario(UsuarioModel model)
+        {
+            if (!ModelState.IsValid)//Evitar enviar campos vacios
+            {
+                return View(model);
+            }
+            using (var api = _httpClient.CreateClient())
+            {
+                api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Usuarios/EditarUsuario";
+                var result = api.PutAsJsonAsync(url, model).Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("ListaUsuarios", "Usuarios");
+                }
+
+                return View();
+            }
         }
 
         [HttpPost]
-        public IActionResult RegistrarCuenta(UsuarioModel model)
+        public IActionResult EliminarUsuario(UsuarioModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.Msj = "Datos incompletos";
-                Console.WriteLine(model.nombreCompleto);
-                return View();
-            }
-
-            var datos = new
-            {
-                usuario = model.usuario,
-                nombreCompleto = model.nombreCompleto,
-                cedula = model.cedula,
-                correo = model.correo,
-                contrasenna = _utilitarios.Encrypt(model.contrasenna!),
-                idDepartamento = model.idDepartamento,
-                idRol = model.idRol
-            };
-
             using (var api = _httpClient.CreateClient())
             {
-                var url = _configuration.GetSection("Variables:urlApi").Value + "Usuarios/RegistrarCuenta";
-                var response = api.PostAsJsonAsync(url, datos).Result;
-
-                if (response.IsSuccessStatusCode)
+                api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+                var param = new { model.idUsuario };
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Usuarios/EliminarUsuario";
+                var result = api.PutAsJsonAsync(url,param).Result;
+                if (result.IsSuccessStatusCode)
                 {
-                    //retornar a listado usuarios
                     return RedirectToAction("ListaUsuarios", "Usuarios");
                 }
                 else
-                    ViewBag.Msj = "No se pudo completar su petición";
+                {
+                    return RedirectToAction("ListaUsuarios", "Usuarios");
+                }
             }
-
-            return View();
         }
+
 
     }
 }

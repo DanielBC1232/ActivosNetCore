@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Data;
 using ActivosAPI.Dependencias;
+using System.Reflection;
 
 namespace ActivosAPI.Controllers
 {
@@ -23,30 +24,6 @@ namespace ActivosAPI.Controllers
         {
             _configuration = configuration;
             _utilitarios = utilitarios;
-        }
-
-        [HttpGet]
-        [Route("DetallesUsuario")]
-        public async Task<IActionResult> DetallesUsuario([FromQuery] int idUsuario)
-        {
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
-            {
-                string storedProcedure = "SP_DetallesUsuario";
-                var parameters = new { idUsuario };
-                // Esperar correctamente la tarea asincrónica
-                var Usuario = await context.QueryFirstOrDefaultAsync<UsuarioModel>(
-                    storedProcedure,
-                    parameters,
-                    commandType: CommandType.StoredProcedure);
-
-                if (Usuario == null)
-                {
-                    return NotFound(new { message = "Usuario no encontrado" });
-                }
-
-                return Ok(new { Indicador = true, Mensaje = "Usuario encontrado", Datos = Usuario });
-            }
-
         }
 
         [HttpPost]
@@ -83,6 +60,30 @@ namespace ActivosAPI.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("DetallesUsuario")]
+        public async Task<IActionResult> DetallesUsuario([FromQuery] int idUsuario)
+        {
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                string storedProcedure = "SP_DetallesUsuario";
+                var parameters = new { idUsuario };
+                // Esperar correctamente la tarea asincrónica
+                var Usuario = await context.QueryFirstOrDefaultAsync<UsuarioModel>(
+                    storedProcedure,
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+
+                if (Usuario == null)
+                {
+                    return NotFound(new { message = "Usuario no encontrado" });
+                }
+
+                return Ok(new { Indicador = true, Mensaje = "Usuario encontrado", Datos = Usuario });
+            }
+
+        }
+
         [HttpPost("ObtenerListaUsuarios")]
         public IActionResult ObtenerListaUsuarios(UsuarioModel? model)
         {
@@ -115,6 +116,62 @@ namespace ActivosAPI.Controllers
             }
 
         }
+
+        [HttpPut]
+        [Route("EditarUsuario")]
+        public IActionResult EditarActivo(UsuarioModel model)
+        {
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                var result = context.Execute("SP_EditarUsuario",
+                    new { model.idUsuario, model.usuario, model.nombreCompleto, model.cedula, model.correo, model.idDepartamento, model.idRol });
+
+                var respuesta = new RespuestaModel();
+
+                if (result > 0)
+                {
+                    respuesta.Indicador = true;
+                    respuesta.Mensaje = "El activo se ha actualizado correctamente";
+                    return Ok(respuesta);
+                }
+                else
+                {
+                    respuesta.Indicador = false;
+                    respuesta.Mensaje = "El activo no ha actualizado";
+                    return StatusCode(500, respuesta);
+
+                }
+
+            }
+        }
+
+        [HttpPut]
+        [Route("EliminarUsuario")]
+        public IActionResult EliminarActivo(UsuarioModel model)
+        {
+            var idUsuario = model.idUsuario;
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                var result = context.Execute("SP_EliminarUsuario",
+                    new { idUsuario });
+
+                var respuesta = new RespuestaModel();
+
+                if (result > 0)
+                {
+                    respuesta.Indicador = true;
+                    respuesta.Mensaje = "El usuario se ha desactivado correctamente";
+                    return Ok(respuesta);
+                }
+                else
+                {
+                    respuesta.Indicador = false;
+                    respuesta.Mensaje = "El usuario no se ha desactivado";
+                    return StatusCode(500, respuesta);
+                }
+            }
+        }
+
 
     }
 }

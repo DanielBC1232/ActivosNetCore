@@ -423,6 +423,42 @@ BEGIN
 END;
 GO
 
+--UPDATE USUARIO
+CREATE OR ALTER PROCEDURE SP_EditarUsuario
+@idUsuario INT,
+@usuario VARCHAR(50),
+@nombreCompleto VARCHAR(50),
+@cedula VARCHAR(50),
+@correo VARCHAR(50),
+@idDepartamento	INT,
+@idRol INT
+AS BEGIN
+
+	UPDATE Usuario SET
+	usuario = @usuario,
+	nombreCompleto = @nombreCompleto,
+	cedula = @cedula,
+	correo = @correo,
+	idDepartamento = @idDepartamento,
+	idRol = @idRol
+	WHERE idUsuario = @idUsuario
+
+END;
+GO
+
+--DELETE USUARIO
+CREATE OR ALTER PROCEDURE SP_EliminarUsuario(
+@idUsuario INT
+)
+AS BEGIN
+
+	UPDATE Usuario SET
+	estado = 0
+	WHERE idUsuario = @idUsuario
+
+END;
+GO
+select * from Usuario;
 --Inserts de prueba
 INSERT INTO Departamento (nombreDepartamento) VALUES ('Administración');
 INSERT INTO Departamento (nombreDepartamento) VALUES ('Tecnología');

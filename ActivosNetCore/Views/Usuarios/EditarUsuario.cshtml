@@ -1,0 +1,107 @@
+﻿@model ActivosNetCore.Models.UsuarioModel;
+
+<div class="content-wrap mt-5 p-3">
+    <div class="main">
+        <div class="container-fluid overflow-hidden">
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="card-header bg-secondary"><h3 class="text-white">Editar usuario</h3></div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <form asp-action="EditarUsuario" asp-controller="Usuarios" method="post">
+                                <div class="row g-5 p-3 mb-4 border-bottom">
+                                    <div class="col-md-6">
+                                        <input type="hidden" asp-for="idUsuario" name="idUsuario"/>
+                                        <div class="mb-3">
+                                            <label class="form-label">Usuario:</label>
+                                            <input type="text" class="form-control" asp-for="usuario" name="usuario" />
+
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Nombre:</label>
+                                            <input type="text" class="form-control" asp-for="nombreCompleto" name="nombreCompleto" />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Cedula:</label>
+                                            <input type="text" class="form-control" asp-for="cedula" name="cedula" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 d-flex flex-column">
+                                        <div class="mb-3">
+                                            <label class="form-label">correo:</label>
+                                            <input type="email" class="form-control" asp-for="correo" name="correo" />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="idDepartamento" class="form-label">Departamento:</label>
+                                            <select asp-for="idDepartamento" id="departamentoFilter" class="form-control" name="idDepartamento" data-selected="@Model.idDepartamento">
+                                                <option id="departamentoFilter" value="0">Seleccionar...</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label"><strong>Rol</strong></label>
+                                            <select asp-for="idRol" class="form-control" name="idRol">
+                                                <option selected value="">Seleccione...</option>
+                                                <option value="1">Administrador</option>
+                                                <option value="2">Usuario</option>
+                                                <option value="3">Soporte</option>
+                                            </select>
+                                        </div>
+                                        <div class="d-grid gap-5 align-self-end mt-3 row">
+                                            <div class="col-6">
+                                                <button type="submit" class="btn btn-primary text-white" asp-controller="Usuarios" asp-action="EditarUsuario">Guardar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function() {
+        $('#departamentoFilter, #rolFilter').select2({
+                placeholder: function(){
+                  return $(this).find('option:selected').text();
+                },
+                allowClear: false,
+                width: '100%'
+              });
+              function parseOrZero(val) {
+                return val && val !== "" ? parseInt(val, 10) : 0;
+              }
+              function cargarDepartamentos() {
+                const $sel = $('#departamentoFilter');
+                const pre = parseOrZero($sel.data('selected'));
+
+                // reset
+                $sel.empty()
+                    .append(`<option value="0"${pre===0?' selected':''}>Seleccionar</option>`);
+
+                $.ajax({
+                  url: '@Url.Action("ObtenerListaDepartamento", "Login")',
+                  type: 'GET',
+                  success: function (items) {
+                    items.forEach(function (d) {
+                      const sel = pre === d.idDepartamento ? ' selected' : '';
+                      $sel.append(`<option value="${d.idDepartamento}"${sel}>${d.nombreDepartamento}</option>`);
+                    });
+                    // refresca Select2
+                    $sel.trigger('change');
+                  },
+                  error: function () {
+                    console.error('Error al cargar departamentos');
+                  }
+                });
+              }
+            cargarDepartamentos();
+
+
+    });
+</script>
+
+
+
