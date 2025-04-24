@@ -4,7 +4,7 @@ GO
 
 CREATE TABLE Departamento (
     idDepartamento INT PRIMARY KEY IDENTITY(1,1),
-    nombre VARCHAR(100)
+    nombreDepartamento VARCHAR(100)
 );
 GO
 
@@ -17,7 +17,8 @@ GO
 CREATE TABLE Usuario (
     idUsuario INT PRIMARY KEY IDENTITY(1,1)NOT NULL,
     usuario VARCHAR(100) NOT NULL,
-    nombreCompleto VARCHAR(100),
+    nombre VARCHAR(100),
+	apellido  VARCHAR(100),
     cedula VARCHAR(20)NOT NULL,
     correo VARCHAR(100)NOT NULL,
     contrasenna NVARCHAR(256) NOT NULL,
@@ -27,9 +28,6 @@ CREATE TABLE Usuario (
 );
 Go
 
-select * from Usuario
-GO
-
 CREATE TABLE Activo (
     idActivo INT PRIMARY KEY IDENTITY(1,1),
     nombreActivo VARCHAR(100),
@@ -38,7 +36,7 @@ CREATE TABLE Activo (
     descripcion VARCHAR(255),
     estado BIT,
     idDepartamento INT FOREIGN KEY REFERENCES Departamento(idDepartamento),
-    idResponsable INT FOREIGN KEY REFERENCES Usuario(idUsuario)
+    idUsuario INT FOREIGN KEY REFERENCES Usuario(idUsuario)
 );
 GO
 
@@ -69,19 +67,6 @@ GO
 
 --Procedimientos almacenados
 --Crear ticket 
-CREATE OR ALTER PROCEDURE sp_CrearTicket
-    @urgencia VARCHAR(50),
-    @detalle VARCHAR(255),
-    @idUsuario INT,
-    @idDepartamento INT
-AS
-BEGIN
-      INSERT INTO Ticket (urgencia, detalle, fecha, solucionado, estado, idResponsable,idUsuario, idDepartamento)
-    VALUES (@urgencia, @detalle, GETDATE(), 0, 1, NULL,@idUsuario, @idDepartamento)
-END;
-GO
-
---Crear ticket ACTUALIZADO
 CREATE OR ALTER PROCEDURE spp_CrearTicket
     @urgencia     VARCHAR(50),
     @detalle      VARCHAR(255),
@@ -131,9 +116,9 @@ BEGIN
         t.idUsuario,
         t.idDepartamento,
         t.idResponsable,
-        u.nombreCompleto AS nombreUsuario,
+        u.nombre + ' ' + u.apellido AS nombreUsuario,
         d.nombreDepartamento,
-        r.nombreCompleto AS nombreResponsable
+        r.nombre + ' ' + r.apellido AS nombreResponsable
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
     INNER JOIN Departamento d ON t.idDepartamento = d.idDepartamento
@@ -152,9 +137,9 @@ BEGIN
 		t.idUsuario,
 		t.idDepartamento,
 		t.idResponsable,
-        u.nombreCompleto AS nombreUsuario,
+        u.nombre + ' ' + u.apellido AS nombreUsuario,
         d.nombreDepartamento,
-        r.nombreCompleto AS nombreResponsable
+        r.nombre + ' ' + r.apellido AS nombreResponsable
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
     INNER JOIN Departamento d ON t.idDepartamento = d.idDepartamento
@@ -183,20 +168,6 @@ BEGIN
   WHERE idTicket = @idTicket;
 END
 
--- Listado de Soportes
-CREATE OR ALTER PROCEDURE sp_ListarSoportes
-AS
-BEGIN
-    SELECT 
-      u.idUsuario,
-      u.nombreCompleto
-    FROM Usuario u
-    INNER JOIN Rol r ON u.idRol = r.idRol
-    WHERE r.tipo = 'Soporte'
-      AND u.estado = 1;
-END
-GO
-
 --Eliminar ticket
 CREATE PROCEDURE sp_EliminarTicket
     @IdTicket INT
@@ -206,6 +177,21 @@ BEGIN
 END
 GO
 
+-- Listado de Soportes
+CREATE OR ALTER PROCEDURE sp_ListarSoportes
+AS
+BEGIN
+    SELECT 
+      u.idUsuario,
+        u.nombre + ' ' + u.apellido AS nombreUsuario
+    FROM Usuario u
+    INNER JOIN Rol r ON u.idRol = r.idRol
+    WHERE r.tipo = 'Soporte'
+      AND u.estado = 1;
+END
+GO
+
+--Activos
 --CREATE
 CREATE OR ALTER PROCEDURE SP_AgregarActivo(
 @nombreActivo VARCHAR(100),
@@ -238,7 +224,7 @@ BEGIN
 	A.idDepartamento,
 	D.nombreDepartamento,
 	A.idResponsable,
-	R.nombreCompleto AS nombreResponsable
+    R.nombre + ' ' + R.apellido AS nombreResponsable
 	FROM Activo A
 	INNER JOIN Departamento D ON D.idDepartamento = A.idDepartamento
 	INNER JOIN Usuario R ON R.idUsuario = A.idResponsable
@@ -264,7 +250,7 @@ SET @SQL =
 	A.serie,
 	A.idDepartamento as idDepA,
 	D.idDepartamento as idDepD,
-	D.nombre,
+	D.nombreDepartamento,
 	A.idResponsable as idResponsable,
 	U.idUsuario as idResR,
 	U.nombre as nombreResponsable
@@ -333,7 +319,7 @@ BEGIN
 	SELECT 
 		U.idUsuario,
 		U.usuario,
-		U.nombreCompleto,
+		U.nombre + '' '' + U.apellido AS nombreCompleto,
 		U.cedula,
 		U.correo,
 		D.nombreDepartamento,
@@ -344,7 +330,7 @@ BEGIN
 	WHERE U.estado = 1'
 
 	IF @nombreCompleto IS NOT NULL AND @nombreCompleto <> ''
-		SET @sql += ' AND U.nombreCompleto LIKE ''%' + @nombreCompleto + '%'''
+		SET @sql += ' AND U.nombre + '' '' + U.apellido LIKE ''%' + @nombreCompleto + '%'''
 
 	IF @cedula IS NOT NULL AND @cedula <> ''
 		SET @sql += ' AND U.cedula LIKE ''%' + @cedula + '%'''
@@ -359,9 +345,10 @@ BEGIN
 END
 GO
 
+
 CREATE OR ALTER PROCEDURE SP_ObtenerListaDepartamento
 AS BEGIN
-	SELECT idDepartamento,nombreDepartamento from Departamento
+	SELECT idDepartamento,nombre from Departamento
 END;
 GO
 
@@ -385,7 +372,8 @@ GO
 --REGISTRAR CUENTA
 CREATE OR ALTER PROCEDURE SP_RegistrarCuenta
 @usuario VARCHAR(100),
-@nombreCompleto VARCHAR(100),
+@nombre VARCHAR(100),
+@apellido VARCHAR(100),
 @cedula VARCHAR(10),
 @correo VARCHAR(50),
 @contrasenna NVARCHAR(256),
@@ -393,8 +381,8 @@ CREATE OR ALTER PROCEDURE SP_RegistrarCuenta
 @idRol INT
 AS BEGIN
 
-	INSERT INTO Usuario(usuario,nombreCompleto,cedula,correo,contrasenna,idDepartamento,idRol,estado)
-	VALUES (@usuario,@nombreCompleto,@cedula,@correo,@contrasenna,@idDepartamento,@idRol,1)
+	INSERT INTO Usuario(usuario,nombre,apellido,cedula,correo,contrasenna,idDepartamento,idRol,estado)
+	VALUES (@usuario,@nombre,@apellido,@cedula,@correo,@contrasenna,@idDepartamento,@idRol,1)
 
 END;
 GO
@@ -408,7 +396,7 @@ BEGIN
 	SELECT 
 		U.idUsuario,
 		U.usuario,
-		U.nombreCompleto,
+		U.nombre + ' ' + U.apellido AS nombreCompleto,
 		U.cedula,
 		U.correo,
 		D.idDepartamento,
@@ -427,7 +415,8 @@ GO
 CREATE OR ALTER PROCEDURE SP_EditarUsuario
 @idUsuario INT,
 @usuario VARCHAR(50),
-@nombreCompleto VARCHAR(50),
+@nombre VARCHAR(50),
+@apellido VARCHAR(50),
 @cedula VARCHAR(50),
 @correo VARCHAR(50),
 @idDepartamento	INT,
@@ -436,7 +425,8 @@ AS BEGIN
 
 	UPDATE Usuario SET
 	usuario = @usuario,
-	nombreCompleto = @nombreCompleto,
+	nombre = @nombre,
+	apellido = @apellido,
 	cedula = @cedula,
 	correo = @correo,
 	idDepartamento = @idDepartamento,
@@ -458,33 +448,31 @@ AS BEGIN
 
 END;
 GO
-select * from Usuario;
+
 --Inserts de prueba
-INSERT INTO Departamento (nombreDepartamento) VALUES ('Administración');
-INSERT INTO Departamento (nombreDepartamento) VALUES ('Tecnología');
-INSERT INTO Departamento (nombreDepartamento) VALUES ('Recursos Humanos');
+INSERT INTO Departamento (nombre) VALUES ('Administración');
+INSERT INTO Departamento (nombre) VALUES ('Tecnología');
+INSERT INTO Departamento (nombre) VALUES ('Recursos Humanos');
 select * from Departamento
 -- Insertar roles
 INSERT INTO Rol (tipo) VALUES ('Administrador');
 INSERT INTO Rol (tipo) VALUES ('Usuario');
 INSERT INTO Rol (tipo) VALUES ('Soporte');
-Select * from Rol
-GO
 -- Insertar usuarios
-INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('jdoe', 'John Doe', '1234567890', 'jdoe@example.com', 'password123', 1, 1, 1);
+INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('jdoe', 'John','Doe', '1234567890', 'jdoe@example.com', 'password123', 1, 1, 1);
 
-INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('asmith', 'Alice Smith', '9876543210', 'asmith@example.com', 'pass456', 1, 2, 2);
+INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('asmith', 'Alice','Smith', '9876543210', 'asmith@example.com', 'pass456', 1, 2, 2);
 
-INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('bgarcia', 'Bob Garcia', '1122334455', 'bgarcia@example.com', 'secret789', 1, 3, 3);
+INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('bgarcia', 'Bob','Garcia', '1122334455', 'bgarcia@example.com', 'secret789', 1, 3, 3);
 
-INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('juanpedro', 'Juan Pedro', '1122334465', 'juanpedro@example.com', 'secret7899', 1, 3, 3);
+INSERT INTO Usuario (usuario,  nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('juanpedro', 'Juan','Pedro', '1122334465', 'juanpedro@example.com', 'secret7899', 1, 3, 3);
 
-INSERT INTO Usuario (usuario, nombreCompleto, cedula, correo, contrasenna, estado, idDepartamento, idRol)
-VALUES ('juanpedro2', 'Juancito  Pedrito', '1122334475', 'juanpedro2@example.com', 'secret7898', 1, 3, 3);
+INSERT INTO Usuario (usuario, nombre, apellido, cedula, correo, contrasenna, estado, idDepartamento, idRol)
+VALUES ('juanpedro2', 'Juancito','Pedrito', '1122334475', 'juanpedro2@example.com', 'secret7898', 1, 3, 3);
 GO
 
 -- Insertar activos
@@ -518,7 +506,6 @@ VALUES ('Media', 'Error en software', '2025-04-05', 0, 1, 'En proceso de diagnós
 INSERT INTO Ticket (urgencia, detalle, fecha, solucionado, estado, detalleTecnico, idResponsable, idUsuario, idDepartamento)
 VALUES ('Baja', 'Solicitud de actualización', '2025-04-10', 1, 1, 'Actualizado correctamente', 3, 3, 3);
 GO
-Select * from Ticket;
 
 -- SP PARA FILTROS
 CREATE OR ALTER PROCEDURE sp_ConsultarTodosTicketsFiltro
@@ -571,8 +558,8 @@ BEGIN
 		t.idDepartamento,
 		t.idResponsable,
         t.detalleTecnico,
-        u.nombreCompleto AS nombreUsuario,
-        COALESCE(r.nombreCompleto, 'Sin asignar') AS nombreResponsable,
+		u.nombre + ' ' + u.apellido AS nombreUsuario,
+        COALESCE(r.nombre, 'Sin asignar') AS nombreResponsable,
         d.nombreDepartamento
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
@@ -682,10 +669,11 @@ BEGIN
         m.detalle,
         m.estado,
         m.idUsuario,
-        u.nombreCompleto AS nombreUsuario,
+		u.nombre + ' ' + u.apellido AS nombreUsuario,
         m.idActivo,
         a.nombreActivo,
-        m.idResponsable, r.nombreCompleto AS nombreResponsable
+        m.idResponsable, 
+		r.nombre + ' ' + r.apellido AS nombreResponsable
     FROM Mantenimiento m
     INNER JOIN Usuario u ON m.idUsuario        = u.idUsuario
     INNER JOIN Activo  a ON m.idActivo         = a.idActivo
@@ -719,31 +707,6 @@ BEGIN
     WHERE idMantenimiento = @idMantenimiento;
 END;
 GO
-
-
-CREATE OR ALTER PROCEDURE sp_ActualizarMantenimiento
- @idMantenimiento INT,
-    @fecha           DATE,
-    @detalle         VARCHAR(255),
-    @estado          BIT,
-    @idResponsable   INT = NULL,
-    @idActivo        INT,
-    @idUsuario       INT
-AS
-BEGIN
-    UPDATE Mantenimiento
-    SET 
-        fecha         = @fecha,
-        detalle       = @detalle,
-        estado        = @estado,
-        idResponsable = @idResponsable,
-        idActivo      = @idActivo,
-        idUsuario     = @idUsuario
-    WHERE idMantenimiento = @idMantenimiento;
-END;
-GO
-
-
 
 CREATE OR ALTER PROCEDURE sp_EliminarMantenimiento
     @idMantenimiento INT
@@ -800,10 +763,11 @@ BEGIN
         m.detalle,
         m.estado,
         m.idUsuario,
-        u.nombreCompleto AS nombreUsuario,
+		u.nombre + ' ' + u.apellido AS nombreUsuario,
         m.idActivo,
         a.nombreActivo,
-        m.idResponsable, r.nombreCompleto AS nombreResponsable
+        m.idResponsable, 
+		r.nombre + ' ' + r.apellido AS nombreResponsable
     FROM Mantenimiento m
     INNER JOIN Usuario u ON m.idUsuario        = u.idUsuario
     INNER JOIN Activo  a ON m.idActivo         = a.idActivo
@@ -814,3 +778,9 @@ GO
 
 Exec SP_DetallesMantenimiento 1
 
+
+CREATE OR ALTER PROCEDURE SP_ObtenerListaDepartamento
+AS BEGIN
+	SELECT idDepartamento,nombreDepartamento from Departamento
+END;
+GO
