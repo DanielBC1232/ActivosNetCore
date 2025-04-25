@@ -77,6 +77,7 @@ BEGIN
     DECLARE @idResponsable INT;
     DECLARE @rolSoporte    INT;
 
+    -- Asegúrate de que solo trae uno
     SELECT TOP 1 @rolSoporte = idRol
     FROM Rol
     WHERE tipo = 'Soporte';
@@ -166,6 +167,7 @@ BEGIN
       idResponsable  = @idResponsable
   WHERE idTicket = @idTicket;
 END
+GO
 
 --Eliminar ticket
 CREATE PROCEDURE sp_EliminarTicket
@@ -190,19 +192,18 @@ BEGIN
 END
 GO
 
---Activos
---CREATE
+--Activos --CREATE
 CREATE OR ALTER PROCEDURE SP_AgregarActivo(
 @nombreActivo VARCHAR(100),
 @placa INT,
 @serie VARCHAR(50),
 @descripcion NVARCHAR(1024),
 @idDepartamento	INT,
-@idResponsable INT)
+@idUsuario INT)
 AS BEGIN
 
-	INSERT INTO Activo(nombreActivo,placa,serie,descripcion,estado,idDepartamento,idResponsable)
-	VALUES (@nombreActivo,@placa,@serie,@descripcion,1,@idDepartamento,@idResponsable);
+	INSERT INTO Activo(nombreActivo,placa,serie,descripcion,estado,idDepartamento,idUsuario)
+	VALUES (@nombreActivo,@placa,@serie,@descripcion,1,@idDepartamento,@idUsuario);
 
 END;
 GO
@@ -222,11 +223,11 @@ BEGIN
 	A.descripcion,
 	A.idDepartamento,
 	D.nombreDepartamento,
-	A.idResponsable,
+	A.idUsuario,
     R.nombre + ' ' + R.apellido AS nombreResponsable
 	FROM Activo A
 	INNER JOIN Departamento D ON D.idDepartamento = A.idDepartamento
-	INNER JOIN Usuario R ON R.idUsuario = A.idResponsable
+	INNER JOIN Usuario R ON R.idUsuario = A.idUsuario
 	WHERE A.idActivo = @idActivo
 
 END;
@@ -279,7 +280,7 @@ CREATE OR ALTER PROCEDURE SP_EditarActivo(
 @serie VARCHAR(50),
 @descripcion NVARCHAR(1024),
 @idDepartamento	INT,
-@idResponsable INT)
+@idUsuario INT)
 AS BEGIN
 
 	UPDATE Activo SET
@@ -288,7 +289,7 @@ AS BEGIN
 	serie = @serie,
 	descripcion = @descripcion,
 	idDepartamento = @idDepartamento,
-	@idResponsable = @idResponsable
+	@idUsuario = @idUsuario
 	WHERE idActivo = @idActivo
 
 END;
@@ -347,7 +348,7 @@ GO
 
 CREATE OR ALTER PROCEDURE SP_ObtenerListaDepartamento
 AS BEGIN
-	SELECT idDepartamento,nombre from Departamento
+	SELECT idDepartamento,nombreDepartamento from Departamento
 END;
 GO
 
@@ -395,6 +396,8 @@ BEGIN
 	SELECT 
 		U.idUsuario,
 		U.usuario,
+		U.nombre,
+		U.apellido,
 		U.nombre + ' ' + U.apellido AS nombreCompleto,
 		U.cedula,
 		U.correo,
@@ -449,9 +452,9 @@ END;
 GO
 
 --Inserts de prueba
-INSERT INTO Departamento (nombre) VALUES ('Administración');
-INSERT INTO Departamento (nombre) VALUES ('Tecnología');
-INSERT INTO Departamento (nombre) VALUES ('Recursos Humanos');
+INSERT INTO Departamento (nombreDepartamento) VALUES ('Administración');
+INSERT INTO Departamento (nombreDepartamento) VALUES ('Tecnología');
+INSERT INTO Departamento (nombreDepartamento) VALUES ('Recursos Humanos');
 select * from Departamento
 -- Insertar roles
 INSERT INTO Rol (tipo) VALUES ('Administrador');
@@ -475,13 +478,13 @@ VALUES ('juanpedro2', 'Juancito','Pedrito', '1122334475', 'juanpedro2@example.co
 GO
 
 -- Insertar activos
-INSERT INTO Activo (nombreActivo, placa, serie, descripcion, estado, idDepartamento, idResponsable)
+INSERT INTO Activo (nombreActivo, placa, serie, descripcion, estado, idDepartamento, idUsuario)
 VALUES ('Laptop Dell', 12345, 'SN12345', 'Laptop para uso general', 1, 2, 1);
 
-INSERT INTO Activo (nombreActivo, placa, serie, descripcion, estado, idDepartamento, idResponsable)
+INSERT INTO Activo (nombreActivo, placa, serie, descripcion, estado, idDepartamento, idUsuario)
 VALUES ('Impresora HP', 67890, 'SN67890', 'Impresora multifunción', 1, 1, 2);
 
-INSERT INTO Activo (nombreActivo, placa, serie, descripcion, estado, idDepartamento, idResponsable)
+INSERT INTO Activo (nombreActivo, placa, serie, descripcion, estado, idDepartamento, idUsuario)
 VALUES ('Monitor Samsung', 11111, 'SN11111', 'Monitor de alta definición', 1, 2, 3);
 GO
 
