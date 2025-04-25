@@ -8,6 +8,18 @@
     var estadoFiltro = (string)ViewContext.HttpContext.Request.Query["estado"];
     var urgenciaFiltro = (string)ViewContext.HttpContext.Request.Query["urgencia"];
 }
+@if (TempData["MensajeOk"] != null)
+{
+    <div class="alert alert-success text-center">
+        @TempData["MensajeOk"]
+    </div>
+}
+@if (TempData["MensajeError"] != null)
+{
+    <div class="alert alert-danger text-center">
+        @TempData["MensajeError"]
+    </div>
+}
 
 <div class="content-wrap mt-3 p-3">
     <div class="main">

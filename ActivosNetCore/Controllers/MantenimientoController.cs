@@ -9,6 +9,7 @@ using System.Text.Json;
 using ActivosNetCore.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Net.Sockets;
+using System.Net.Http.Headers;
 
 namespace ActivosNetCore.Controllers
 {
@@ -30,6 +31,7 @@ namespace ActivosNetCore.Controllers
         [HttpGet]
         public async Task<IActionResult> ListaMantenimiento(MantenimientoModel? model)
         {
+
             using (var api = _httpClient.CreateClient())
             {
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Mantenimiento/ListaMantenimiento";
@@ -57,6 +59,9 @@ namespace ActivosNetCore.Controllers
                 {
                     var Mantenimientos = await result.Content.ReadFromJsonAsync<List<MantenimientoModel>>();
                     return View(Mantenimientos);
+                } else
+                {
+                    TempData["MensajeError"] = "No se pudo cargar el Historial de Mantenimientos";
                 }
             }
             var Mantenimiento = new List<MantenimientoModel>();
@@ -66,30 +71,42 @@ namespace ActivosNetCore.Controllers
         [HttpGet]
         public async Task<IActionResult> AgregarMantenimiento()
         {
-            // 1. Obtener lista de activos desde tu API
+            //1)Recuperar token y userId
+            var token = HttpContext.Session.GetString("Token");
+            int userId = HttpContext.Session.GetInt32("UserId") ?? 1;
+
+            //2)Crear cliente
             var client = _httpClient.CreateClient();
-            var url = _configuration["Variables:urlApi"] + "Activos/ListaActivos";
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
+            //3Construir URL sin duplicar "api"
+            string baseApi = _configuration["Variables:urlApi"].TrimEnd('/');
+            string url = $"{baseApi}/Activos/ListaActivosDrop?userId={userId}";
+
             var resp = await client.GetAsync(url);
 
+            //4) Procesar respuesta
             List<ActivosModel> activos = new();
             if (resp.IsSuccessStatusCode)
             {
-                activos = await resp.Content.ReadFromJsonAsync<List<ActivosModel>>();
+                activos = await resp.Content.ReadFromJsonAsync<List<ActivosModel>>()
+                          ?? new List<ActivosModel>();
+            }
+            else
+            {
+                TempData["MensajeError"] = "No se pudo cargar sus activos";
             }
 
-            // 2. Meterlos en ViewBag para el dropdown
             ViewBag.ListaActivos = new SelectList(activos, "idActivo", "nombreActivo");
 
-            // 2. Inicializar modelo con fecha de hoy y usuario de la sesión
-            int? userId = HttpContext.Session.GetInt32("UserId");
             var model = new MantenimientoModel
             {
                 Fecha = DateTime.Today,
                 Estado = true,
-                IdUsuario = userId ?? 1,
+                IdUsuario = userId,
                 IdResponsable = 1
             };
-
             return View(model);
         }
 
@@ -101,12 +118,13 @@ namespace ActivosNetCore.Controllers
             {
                 // Recargar los activos en caso de error
                 var client = _httpClient.CreateClient();
-                var url = _configuration["Variables:urlApi"] + "Activos/ListaActivos";
+                var url = _configuration["Variables:urlApi"] + "Activos/ListaActivosDrop";
                 var resp = await client.GetAsync(url);
                 List<ActivosModel> activos = resp.IsSuccessStatusCode
                     ? await resp.Content.ReadFromJsonAsync<List<ActivosModel>>()
                     : new List<ActivosModel>();
                 ViewBag.ListaActivos = new SelectList(activos, "idActivo", "nombreActivo");
+                TempData["MensajeError"] = "No se han insertado los datos correctamente.";
                 return View(model);
             }
 
@@ -117,6 +135,7 @@ namespace ActivosNetCore.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
+                    TempData["MensajeOk"] = "Mantenimiento guardado correctamente";
                     return RedirectToAction("ListaMantenimiento");
                 }
                 else
@@ -124,12 +143,13 @@ namespace ActivosNetCore.Controllers
                     ModelState.AddModelError(string.Empty, "Error al guardar el mantenimiento.");
                     // Recargar los activos nuevamente
                     var client = _httpClient.CreateClient();
-                    var url = _configuration["Variables:urlApi"] + "Activos/ListaActivos";
+                    var url = _configuration["Variables:urlApi"] + "Activos/ListaActivosDrop";
                     var resp = await client.GetAsync(url);
                     List<ActivosModel> activos = resp.IsSuccessStatusCode
                         ? await resp.Content.ReadFromJsonAsync<List<ActivosModel>>()
                         : new List<ActivosModel>();
                     ViewBag.ListaActivos = new SelectList(activos, "idActivo", "nombreActivo");
+                    TempData["MensajeError"] = "Error al guardar el mantenimiento.";
                     return View(model);
                 }
             }
@@ -138,10 +158,16 @@ namespace ActivosNetCore.Controllers
         [HttpGet]
         public IActionResult DetallesMantenimiento(int idMantenimiento)
         {
-            var Mantenimiento = _utilitarios.ObtenerInfoMantenimiento(idMantenimiento);
-            return Mantenimiento != null
-                ? View(Mantenimiento)
-                : NotFound("Mantenimiento no encontrado");
+            // 1) Leer mensajes previos
+            ViewBag.MensajeOk = TempData["MensajeOk"] as string;
+            ViewBag.MensajeError = TempData["MensajeError"] as string;
+
+            // 2) Obtener datos
+            var mantenimiento = _utilitarios.ObtenerInfoMantenimiento(idMantenimiento);
+            if (mantenimiento == null)
+                return NotFound("Mantenimiento no encontrado");
+
+            return View(mantenimiento);
         }
 
         [HttpGet]
@@ -156,23 +182,25 @@ namespace ActivosNetCore.Controllers
         [HttpGet]
         public async Task<IActionResult> EditarMantenimiento(int idMantenimiento)
         {
-            // 1) Obtener detalle del mantenimiento
+            // 1) Leer mensajes previos de TempData
+            ViewBag.MensajeOk = TempData["MensajeOk"] as string;
+            ViewBag.MensajeError = TempData["MensajeError"] as string;
+
+            // 2) Obtener detalle del mantenimiento
             var model = _utilitarios.ObtenerInfoMantenimiento(idMantenimiento);
             if (model == null)
                 return NotFound("No se encontró el mantenimiento.");
 
-            // 1) Obtengo la lista de soportes
-            var client = _httpClient.CreateClient();
-            var resp = await client.GetAsync(_configuration["Variables:urlApi"] + "Ticket/ListaSoportes");
-            var soportes = resp.IsSuccessStatusCode
-                ? await resp.Content.ReadFromJsonAsync<List<UsuarioModel>>()
-                : new List<UsuarioModel>();
+            // 3) Cargar dropdown de responsables
+            var soportes = await _httpClient.CreateClient()
+                .GetFromJsonAsync<List<UsuarioModel>>(
+                    _configuration["Variables:urlApi"] + "Ticket/ListaSoportes")
+                ?? new List<UsuarioModel>();
 
-            // 2) La pongo en ViewBag usando exactamente "idUsuario" y "nombreCompleto"
             ViewBag.Responsables = new SelectList(
                 soportes,
-                "idUsuario",       // Valor de cada option
-                "nombreCompleto",  // Texto de cada option
+                "idUsuario",
+                "nombreCompleto",
                 model.IdResponsable
             );
 
@@ -183,24 +211,40 @@ namespace ActivosNetCore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditarMantenimiento(MantenimientoModel model)
         {
-    
+            // 1) Volver a cargar responsables para el dropdown
             var soportes = await _httpClient.CreateClient()
-                .GetFromJsonAsync<List<UsuarioModel>>(_configuration["Variables:urlApi"] + "Ticket/ListaSoportes");
-            ViewBag.Responsables = new SelectList(soportes, "idUsuario", "nombreCompleto", model.IdResponsable);
+                .GetFromJsonAsync<List<UsuarioModel>>(
+                    _configuration["Variables:urlApi"] + "Ticket/ListaSoportes")
+                ?? new List<UsuarioModel>();
 
+            ViewBag.Responsables = new SelectList(
+                soportes,
+                "idUsuario",
+                "nombreCompleto",
+                model.IdResponsable
+            );
+
+            // 2) Validación de modelo
             if (!ModelState.IsValid)
                 return View(model);
 
+            // 3) Llamada a la API para guardar cambios
             var api = _httpClient.CreateClient();
             var url = _configuration["Variables:urlApi"] + "Mantenimiento/EditarMantenimiento";
-            var result = await api.PutAsJsonAsync(url, model);
+            var resp = await api.PutAsJsonAsync(url, model);
 
-            // 4) Si falla, devolver la misma vista con ViewBag
-            if (!result.IsSuccessStatusCode)
+            if (resp.IsSuccessStatusCode)
+            {
+                // Mensaje de éxito sin iconos
+                TempData["MensajeOk"] = "El mantenimiento se editó correctamente";
+                return RedirectToAction("ListaMantenimiento");
+            }
+            else
+            {
+                // Mensaje de error sin iconos
+                TempData["MensajeError"] = "No se pudo editar el mantenimiento";
                 return View(model);
-
-            // 5) Redirigir al listado
-            return RedirectToAction("ListaMantenimiento");
+            }
         }
 
         [HttpPost]

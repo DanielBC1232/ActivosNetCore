@@ -271,6 +271,28 @@ SET @SQL =
 END;
 GO
 
+--READ (Listado)
+CREATE OR ALTER PROCEDURE SP_ListadoActivoDrop
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        a.idActivo,
+        a.nombreActivo,
+        a.placa,
+        a.serie,
+        a.descripcion,
+        a.estado,
+        a.idDepartamento,
+        a.idUsuario
+    FROM Activo AS a
+    WHERE a.idUsuario = @idUsuario
+    ORDER BY a.idActivo;
+END;
+GO
+
 --UPDATE
 CREATE OR ALTER PROCEDURE SP_EditarActivo(
 @idActivo INT,
@@ -838,3 +860,5 @@ GO
 
 SELECT * FROM Mantenimiento
 EXEC SPP_ConsultarTodosMantenimientosHistorial
+
+

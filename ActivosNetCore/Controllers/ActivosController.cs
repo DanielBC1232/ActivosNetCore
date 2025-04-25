@@ -33,6 +33,8 @@ namespace ActivosNetCore.Controllers
             return View();
         }
 
+
+
         [HttpGet]
         public IActionResult AgregarActivo()
         {
@@ -57,7 +59,7 @@ namespace ActivosNetCore.Controllers
                 {
                     return RedirectToAction("ListaActivos", "Activos");
                 }
-
+                ViewBag.Msj = "No se pudo completar su petición";
                 return View();
             }
         }

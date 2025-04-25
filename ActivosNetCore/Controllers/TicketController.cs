@@ -58,19 +58,21 @@ namespace ActivosNetCore.Controllers
         {
             if (!ModelState.IsValid)
             {
+                TempData["MensajeError"] = "Por favor, completa todos los campos obligatorios.";
                 return View();
             }
             using (var api = _httpClient.CreateClient())
             {
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Ticket/AgregarTicket";
-                Console.WriteLine(JsonSerializer.Serialize(model));
+                
                 var result = api.PostAsJsonAsync(url, model).Result;
 
                 if (result.IsSuccessStatusCode)
                 {
+                    TempData["MensajeOk"] = "Ticket creado correctamente.";
                     return RedirectToAction("ListaTicket", "Ticket");
                 }
-
+                TempData["MensajeError"] = "No se pudo crear el ticket. Inténtalo de nuevo.";
                 return View();
             }
         }
@@ -78,6 +80,10 @@ namespace ActivosNetCore.Controllers
         [HttpGet]
         public IActionResult DetallesTicket(int idTicket)
         {
+            ViewBag.MensajeOk = TempData["MensajeOk"] as string;
+            ViewBag.MensajeError = TempData["MensajeError"] as string;
+
+
             var ticket = _utilitarios.ObtenerInfoTicket(idTicket);
             return ticket != null
                 ? View(ticket)
@@ -103,8 +109,8 @@ namespace ActivosNetCore.Controllers
             // 2) La pongo en ViewBag usando exactamente "idUsuario" y "nombreCompleto"
             ViewBag.Responsables = new SelectList(
                 soportes,
-                "idUsuario",       // Valor de cada option
-                "nombreCompleto",  // Texto de cada option
+                "idUsuario", 
+                "nombreCompleto",  
                 ticket.IdResponsable
             );
 
@@ -118,18 +124,26 @@ namespace ActivosNetCore.Controllers
             var soportes = await _httpClient.CreateClient()
                 .GetFromJsonAsync<List<UsuarioModel>>(_configuration["Variables:urlApi"] + "Ticket/ListaSoportes");
             ViewBag.Responsables = new SelectList(soportes, "idUsuario", "nombreCompleto", model.IdResponsable);
-
+            
             if (!ModelState.IsValid)
+            {
+                TempData["MensajeError"] = "Revisa los datos e intenta de nuevo.";
                 return View(model);
+            }
 
-            // aquí model.IdResponsable ya viene del dropdown
             var api = _httpClient.CreateClient();
             var url = _configuration["Variables:urlApi"] + "Ticket/EditarTicket";
             var result = await api.PutAsJsonAsync(url, model);
-            if (!result.IsSuccessStatusCode)
+            if (result.IsSuccessStatusCode)
+            {
+                TempData["MensajeOk"] = "Ticket actualizado correctamente.";
+                return RedirectToAction("ListaTicket");
+            }
+            else
+            {
+                TempData["MensajeError"] = "No se pudo actualizar el ticket.";
                 return View(model);
-
-            return RedirectToAction("ListaTicket");
+            }
         }
 
 
@@ -142,10 +156,12 @@ namespace ActivosNetCore.Controllers
                 var result = api.PutAsJsonAsync(url, model).Result;
                 if (result.IsSuccessStatusCode)
                 {
+                    TempData["MensajeOk"] = "Ticket eliminado correctamente.";
                     return RedirectToAction("ListaTicket", "Ticket");
                 }
                 else
                 {
+                    TempData["MensajeError"] = "No se pudo eliminar el ticket.";
                     return RedirectToAction("ListaTicket", "Ticket");
                 }
             }
@@ -189,6 +205,7 @@ namespace ActivosNetCore.Controllers
                     return View(tickets);
                 }
             }
+            TempData["MensajeError"] = "No se pudo cargar los tickets.";
             return View(new List<TicketModel>());
         }
 

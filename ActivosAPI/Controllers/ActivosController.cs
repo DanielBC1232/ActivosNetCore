@@ -51,6 +51,25 @@ namespace ActivosAPI.Controllers
 
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("ListaActivosDrop")]
+        public IActionResult ListaActivosDrop([FromQuery] int userId)
+        {
+            using var db = new SqlConnection(
+                _configuration.GetConnectionString("BDConnection"));
+            var activos = db.Query<ActivosModel>(
+                "SP_ListadoActivoDrop",
+                new { idUsuario = userId },
+                commandType: CommandType.StoredProcedure
+            ).ToList();
+
+            if (activos.Any())
+                return Ok(activos);
+            else
+                return NotFound(new { Indicador = false, Mensaje = "No hay activos para este usuario." });
+        }
+
         [HttpGet]
         [Route("DetallesActivo")]
         public async Task<IActionResult> DetallesActivo([FromQuery] int idActivo)

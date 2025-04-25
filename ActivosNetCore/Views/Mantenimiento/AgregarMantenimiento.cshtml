@@ -5,6 +5,19 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@if (TempData["MensajeOk"] != null)
+{
+    <div class="alert alert-success text-center">
+        @TempData["MensajeOk"]
+    </div>
+}
+@if (TempData["MensajeError"] != null)
+{
+    <div class="alert alert-danger text-center">
+        @TempData["MensajeError"]
+    </div>
+}
+
 <div class="content-wrap mt-5 p-3">
     <div class="main">
         <div class="container-fluid overflow-hidden">
@@ -17,7 +30,7 @@
 
                                 <div class="mb-3">
                                     <label asp-for="Detalle" class="form-label">Detalle</label>
-                                    <textarea asp-for="Detalle" class="form-control" rows="3"></textarea>
+                                    <textarea asp-for="Detalle" class="form-control" rows="3" required></textarea>
                                     <span asp-validation-for="Detalle" class="text-danger"></span>
                                 </div>
 

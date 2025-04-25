@@ -132,13 +132,13 @@ namespace ActivosAPI.Controllers
                 if (result > 0)
                 {
                     respuesta.Indicador = true;
-                    respuesta.Mensaje = "El activo se ha actualizado correctamente";
+                    respuesta.Mensaje = "El Usuario se ha actualizado correctamente";
                     return Ok(respuesta);
                 }
                 else
                 {
                     respuesta.Indicador = false;
-                    respuesta.Mensaje = "El activo no ha actualizado";
+                    respuesta.Mensaje = "El usuario no ha actualizado";
                     return StatusCode(500, respuesta);
 
                 }

@@ -10,6 +10,12 @@
                 <div class="authincation-content p-4 shadow rounded">
                     <div class="auth-form">
                         <h4 class="text-center mb-4">Iniciar sesión con mi cuenta</h4>
+                        @if (ViewBag.Msj != null)
+                        {
+                            <div class="alert alert-danger text-center">
+                                @ViewBag.Msj
+                            </div>
+                        }
                         <form method="post" asp-action="IniciarSesion" asp-controller="Login">
                             <div class="mb-3">
                                 <label class="form-label"><strong>Correo electrónico</strong></label>
