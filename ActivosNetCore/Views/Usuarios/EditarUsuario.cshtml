@@ -18,15 +18,23 @@
 
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">Nombre:</label>
-                                            <input type="text" class="form-control" asp-for="nombreCompleto" name="nombreCompleto" />
+                                            <label class="form-label"><strong>Identificación</strong></label>
+                                            <input asp-for="cedula" type="text" class="form-control" name="cedula" required>
                                         </div>
+                                        <div class="mb-3">
+                                            <label class="form-label"><strong>Nombre:</strong></label>
+                                            <input asp-for="nombre" type="text" class="form-control" name="nombre" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label"><strong>Apellido:</strong></label>
+                                            <input asp-for="apellido" type="text" class="form-control" name="apellido" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 d-flex flex-column">
                                         <div class="mb-3">
                                             <label class="form-label">Cedula:</label>
                                             <input type="text" class="form-control" asp-for="cedula" name="cedula" />
                                         </div>
-                                    </div>
-                                    <div class="col-md-6 d-flex flex-column">
                                         <div class="mb-3">
                                             <label class="form-label">correo:</label>
                                             <input type="email" class="form-control" asp-for="correo" name="correo" />

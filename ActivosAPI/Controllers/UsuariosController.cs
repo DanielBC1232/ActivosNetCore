@@ -35,7 +35,8 @@ namespace ActivosAPI.Controllers
                 var result = context.Execute("SP_RegistrarCuenta", new
                 {
                     model.usuario,
-                    model.nombreCompleto,
+                    model.nombre,
+                    model.apellido,
                     model.cedula,
                     model.correo,
                     model.contrasenna,
@@ -124,7 +125,7 @@ namespace ActivosAPI.Controllers
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
                 var result = context.Execute("SP_EditarUsuario",
-                    new { model.idUsuario, model.usuario, model.nombreCompleto, model.cedula, model.correo, model.idDepartamento, model.idRol });
+                    new { model.idUsuario, model.usuario, model.nombre, model.apellido, model.cedula, model.correo, model.idDepartamento, model.idRol });
 
                 var respuesta = new RespuestaModel();
 

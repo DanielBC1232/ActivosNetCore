@@ -8,6 +8,10 @@ namespace ActivosNetCore.Models
 
         public string? usuario { get; set; }
 
+        public string? nombre { get; set; }
+
+        public string? apellido { get; set; }
+
         public string? nombreCompleto { get; set; }
 
         public string? cedula { get; set; }

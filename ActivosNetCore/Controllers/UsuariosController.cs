@@ -40,7 +40,8 @@ namespace ActivosNetCore.Controllers
             var datos = new
             {
                 usuario = model.usuario,
-                nombreCompleto = model.nombreCompleto,
+                nombre = model.nombre,
+                apellido = model.apellido,
                 cedula = model.cedula,
                 correo = model.correo,
                 contrasenna = _utilitarios.Encrypt(model.contrasenna!),

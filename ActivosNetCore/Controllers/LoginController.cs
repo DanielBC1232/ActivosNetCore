@@ -51,6 +51,7 @@ namespace ActivosNetCore.Controllers
             {
                 correo = model.correo,
                 contrasenna = _utilitarios.Encrypt(model.contrasenna!)
+                //contrasenna = model.contrasenna
             };
             using (var api = _httpClient.CreateClient())
             {
@@ -64,11 +65,10 @@ namespace ActivosNetCore.Controllers
                     if (result != null && result.Indicador)
                     {
                         var datosResult = JsonSerializer.Deserialize<UsuarioModel>((JsonElement)result.Datos!);
-                        HttpContext.Session.SetInt32("UserId", datosResult.idUsuario ?? 0);
+                        HttpContext.Session.SetInt32("UserId", datosResult!.idUsuario ?? 0);
                         HttpContext.Session.SetString("Usuario", datosResult!.usuario!);
                         HttpContext.Session.SetString("Rol", datosResult!.tipo!);//Rol => /Administrador/Usuario/Soporte
                         HttpContext.Session.SetString("Token", datosResult!.Token!);
-
 
                         return RedirectToAction("ListaActivos", "Activos");
                     }
@@ -89,13 +89,6 @@ namespace ActivosNetCore.Controllers
         #endregion
 
         #region Seguridad
-
-        [FiltroSeguridadSesion]
-        [HttpGet]
-        public IActionResult Principal()
-        {
-            return View();
-        }
 
         [FiltroSeguridadSesion]
         [HttpGet]
