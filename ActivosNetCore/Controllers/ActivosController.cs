@@ -92,10 +92,6 @@ namespace ActivosNetCore.Controllers
         [HttpPost]
         public IActionResult EditarActivo(ActivosModel model)
         {
-            if (!ModelState.IsValid)//Evitar enviar campos vacios
-            {
-                return View(model);
-            }
             using (var api = _httpClient.CreateClient())
             {
                 api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));

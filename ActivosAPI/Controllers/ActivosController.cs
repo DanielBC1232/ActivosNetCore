@@ -87,12 +87,12 @@ namespace ActivosAPI.Controllers
         {
             if (!_utilitarios.ValidarTecnicoFromToken(User.Claims))
             {
-                return Ok();
+                return Unauthorized(new { message = "Acceso no autorizado" });
             }
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
                 var result = context.Execute("SP_AgregarActivo",
-                    new { model.nombreActivo, model.placa, model.serie, model.descripcion, model.idDepartamento, model.idResponsable });
+                    new { model.nombreActivo, model.placa, model.serie, model.descripcion, model.idDepartamento, model.idUsuario });
 
                 var respuesta = new RespuestaModel();
 
@@ -122,7 +122,7 @@ namespace ActivosAPI.Controllers
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
                 var result = context.Execute("SP_EditarActivo",
-                    new { model.idActivo, model.nombreActivo, model.placa, model.serie, model.descripcion, model.idDepartamento, model.idResponsable });
+                    new { model.idActivo, model.nombreActivo, model.placa, model.serie, model.descripcion, model.idDepartamento, model.idUsuario });
 
                 var respuesta = new RespuestaModel();
 

@@ -86,7 +86,7 @@ namespace ActivosAPI.Controllers
         }
 
         [HttpPost("ObtenerListaUsuarios")]
-        public IActionResult ObtenerListaUsuarios(UsuarioModel? model)
+        public IActionResult ObtenerListaUsuarios([FromBody] UsuarioModel? model)
         {
             //limpiar parametros
             var parametros = new

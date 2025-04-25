@@ -16,6 +16,8 @@
 
         //Responsable
         public int? idResponsable { get; set; }
+        public int? idUsuario { get; set; }
+
         public string? nombreResponsable { get; set; }
 
     }

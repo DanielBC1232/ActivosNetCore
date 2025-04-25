@@ -224,10 +224,10 @@ BEGIN
 	A.idDepartamento,
 	D.nombreDepartamento,
 	A.idUsuario,
-    R.nombre + ' ' + R.apellido AS nombreResponsable
+    U.nombre + ' ' + U.apellido AS nombreResponsable
 	FROM Activo A
 	INNER JOIN Departamento D ON D.idDepartamento = A.idDepartamento
-	INNER JOIN Usuario R ON R.idUsuario = A.idUsuario
+	INNER JOIN Usuario U ON U.idUsuario = A.idUsuario
 	WHERE A.idActivo = @idActivo
 
 END;
@@ -251,12 +251,11 @@ SET @SQL =
 	A.idDepartamento as idDepA,
 	D.idDepartamento as idDepD,
 	D.nombreDepartamento,
-	A.idResponsable as idResponsable,
-	U.idUsuario as idResR,
+	A.idUsuario as idUsuario,
 	U.nombre as nombreResponsable
 	FROM Activo A
 	INNER JOIN Departamento D ON D.idDepartamento = A.idDepartamento
-	INNER JOIN Usuario U ON U.idUsuario = A.idResponsable
+	INNER JOIN Usuario U ON U.idUsuario = A.idUsuario
 	WHERE 1=1';
 
 	IF (@idDepartamento IS NOT NULL AND @idDepartamento <> 0)
@@ -289,7 +288,7 @@ AS BEGIN
 	serie = @serie,
 	descripcion = @descripcion,
 	idDepartamento = @idDepartamento,
-	@idUsuario = @idUsuario
+	idUsuario = @idUsuario
 	WHERE idActivo = @idActivo
 
 END;

@@ -15,7 +15,8 @@
                             <div class="table-responsive">
                                 <form asp-action="AgregarActivo" asp-controller="Activos">
                                     <div class="row g-5 p-3">
-                                        <div class="col-md-6">
+                                        <div class="col-md-6 d-flex flex-column">
+
                                             <div class="mb-3">
                                                 <label for="nombreActivo" class="form-label">Nombre de activo:</label>
                                                 <input asp-for="nombreActivo" type="text" class="form-control">
@@ -27,16 +28,13 @@
                                                 <span asp-validation-for="serie" class="text-danger"></span>
                                             </div>
                                             <div class="mb-3">
-                                                <label for="idResponsable" class="form-label">Empleado responsable:</label>
-                                                <select asp-for="idResponsable" id="idResponsable" class="form-control">
+                                                <label class="form-label">Responsable:</label>
+                                                <select id="usuarioFilter" class="form-control" asp-for="idUsuario" name="idUsuario">
                                                     <option value="">Seleccionar...</option>
-                                                    <option value="1">[Responsable 1]</option>
-                                                    <option value="2">[Responsable 2]</option>
                                                 </select>
-                                                <span asp-validation-for="idResponsable" class="text-danger"></span>
                                             </div>
-                                        </div>
 
+                                        </div>
                                         <div class="col-md-6 d-flex flex-column">
                                             <div class="mb-3">
                                                 <label for="placa" class="form-label">Placa:</label>
@@ -59,7 +57,6 @@
                                                 <button type="submit" class="btn btn-primary">Agregar</button>
                                             </div>
                                         </div>
-                                    </div>
                                 </form>
                             </div>
                         </div>
@@ -72,40 +69,75 @@
 
 <script>
     $(document).ready(function() {
-        $('#departamentoFilter, #rolFilter').select2({
-                placeholder: function(){
-                  return $(this).find('option:selected').text();
-                },
-                allowClear: false,
-                width: '100%'
-              });
-              function parseOrZero(val) {
+        $('#departamentoFilter, #usuarioFilter').select2({
+            placeholder: function(){
+            return $(this).find('option:selected').text();
+            },
+            allowClear: false,
+            width: '100%'
+        });
+        function parseOrZero(val) {
                 return val && val !== "" ? parseInt(val, 10) : 0;
-              }
-              function cargarDepartamentos() {
-                const $sel = $('#departamentoFilter');
+        }
+
+        //obtener departamentos
+        function cargarDepartamentos() {
+           const $sel = $('#departamentoFilter');
+           const pre = parseOrZero($sel.data('selected'));
+
+           // reset
+           $sel.empty()
+                    .append(`<option value="0"${pre===0?' selected':''}>Seleccionar</option>`);
+
+           $.ajax({
+              url: '@Url.Action("ObtenerListaDepartamento", "Login")',
+              type: 'GET',
+              success: function (items) {
+              items.forEach(function (d) {
+              const sel = pre === d.idDepartamento ? ' selected' : '';
+              $sel.append(`<option value="${d.idDepartamento}"${sel}>${d.nombreDepartamento}</option>`);
+           });
+                    // refresca Select2
+           $sel.trigger('change');
+           },
+           error: function () {
+              console.error('Error al cargar departamentos');
+            }});
+        }
+
+              //obtener usuarios tecnicos
+              function cargarUsuariosResponsables() {
+                const $sel = $('#usuarioFilter');
                 const pre = parseOrZero($sel.data('selected'));
 
                 // reset
                 $sel.empty()
                     .append(`<option value="0"${pre===0?' selected':''}>Seleccionar</option>`);
 
-                $.ajax({
-                  url: '@Url.Action("ObtenerListaDepartamento", "Login")',
-                  type: 'GET',
-                  success: function (items) {
-                    items.forEach(function (d) {
-                      const sel = pre === d.idDepartamento ? ' selected' : '';
-                      $sel.append(`<option value="${d.idDepartamento}"${sel}>${d.nombreDepartamento}</option>`);
+                    $.ajax({
+                      url: '@Url.Action("ObtenerUsuarios", "Usuarios")',
+                      type: 'POST',
+                       data: {
+                          nombreCompleto: "",
+                          cedula:         "",
+                          idDepartamento: 0,
+                          idRol:          0
+                        },
+                      success: function (items) {
+                        console.log(items);
+                        items.forEach(function (d) {
+                          const sel = pre === d.idUsuario ? ' selected' : '';
+                          $sel.append(`<option value="${d.idUsuario}"${sel}>${d.nombreCompleto}</option>`);
+                        });
+                        $sel.trigger('change');
+                      },
+                      error: function () {
+                        console.error('Error al cargar usuarios');
+                      }
                     });
-                    // refresca Select2
-                    $sel.trigger('change');
-                  },
-                  error: function () {
-                    console.error('Error al cargar departamentos');
-                  }
-                });
               }
+
             cargarDepartamentos();
+            cargarUsuariosResponsables();
         });
 </script>

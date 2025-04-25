@@ -11,22 +11,20 @@
                             <div class="table-responsive">
                                 <form asp-action="EditarActivo" asp-controller="Activos">
                                     <div class="row g-5 p-3">
-                                        <div class="col-md-6">
-                                            <input type="hidden" asp-for="idActivo">
+                                        <div class="col-md-6 d-flex flex-column">
+                                            <input type="hidden" asp-for="idActivo" name="idActivo">
                                             <div class="mb-3">
                                                 <label class="form-label">Nombre de activo:</label>
-                                                <input type="text" class="form-control" asp-for="nombreActivo">
+                                                <input type="text" class="form-control" asp-for="nombreActivo" name="nombreActivo">
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Serie:</label>
-                                                <input type="text" class="form-control" asp-for="serie">
+                                                <input type="text" class="form-control" asp-for="serie" name="serie">
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Responsable:</label>
-                                                <select id="select-responsable" class="form-control" asp-for="idResponsable">
+                                                <select id="usuarioFilter" class="form-control" asp-for="idUsuario" name="idUsuario" data-selected="@Model.idUsuario">
                                                     <option value="">Seleccionar...</option>
-                                                    <option value="1">[Responsable 1]</option>
-                                                    <option value="2">[Responsable 2]</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -34,18 +32,16 @@
                                         <div class="col-md-6 d-flex flex-column">
                                             <div class="mb-3">
                                                 <label class="form-label">Placa:</label>
-                                                <input type="text" class="form-control" asp-for="placa">
+                                                <input type="text" class="form-control" asp-for="placa" name="placa">
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Descripción:</label>
-                                                <input type="text" class="form-control" asp-for="descripcion">
+                                                <input type="text" class="form-control" asp-for="descripcion" name="descripcion">
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label">Departamento:</label>
-                                                <select id="select-departamento" class="form-control" asp-for="idDepartamento">
-                                                    <option value="">Seleccionar...</option>
-                                                    <option value="1">Tecnologías de Información</option>
-                                                    <option value="2">Recursos Humanos</option>
+                                                <label for="idDepartamento" class="form-label">Departamento:</label>
+                                                <select asp-for="idDepartamento" id="departamentoFilter" class="form-control" name="idDepartamento" data-selected="@Model.idDepartamento">
+                                                    <option id="departamentoFilter" value="0">Seleccionar...</option>
                                                 </select>
                                             </div>
                                             <div class="d-flex align-self-end mt-2">
@@ -62,3 +58,78 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function() {
+        $('#departamentoFilter, #usuarioFilter').select2({
+            placeholder: function(){
+            return $(this).find('option:selected').text();
+            },
+            allowClear: false,
+            width: '100%'
+        });
+        function parseOrZero(val) {
+                return val && val !== "" ? parseInt(val, 10) : 0;
+        }
+
+        //obtener departamentos
+        function cargarDepartamentos() {
+           const $sel = $('#departamentoFilter');
+           const pre = parseOrZero($sel.data('selected'));
+
+           // reset
+           $sel.empty()
+                    .append(`<option value="0"${pre===0?' selected':''}>Seleccionar</option>`);
+
+           $.ajax({
+              url: '@Url.Action("ObtenerListaDepartamento", "Login")',
+              type: 'GET',
+              success: function (items) {
+              items.forEach(function (d) {
+              const sel = pre === d.idDepartamento ? ' selected' : '';
+              $sel.append(`<option value="${d.idDepartamento}"${sel}>${d.nombreDepartamento}</option>`);
+           });
+                    // refresca Select2
+           $sel.trigger('change');
+           },
+           error: function () {
+              console.error('Error al cargar departamentos');
+            }});
+        }
+
+              //obtener usuarios tecnicos
+              function cargarUsuariosResponsables() {
+                const $sel = $('#usuarioFilter');
+                const pre = parseOrZero($sel.data('selected'));
+
+                // reset
+                $sel.empty()
+                    .append(`<option value="0"${pre===0?' selected':''}>Seleccionar</option>`);
+
+                    $.ajax({
+                      url: '@Url.Action("ObtenerUsuarios", "Usuarios")',
+                      type: 'POST',
+                       data: {
+                          nombreCompleto: "",
+                          cedula:         "",
+                          idDepartamento: 0,
+                          idRol:          0
+                        },
+                      success: function (items) {
+                        console.log(items);
+                        items.forEach(function (d) {
+                          const sel = pre === d.idUsuario ? ' selected' : '';
+                          $sel.append(`<option value="${d.idUsuario}"${sel}>${d.nombreCompleto}</option>`);
+                        });
+                        $sel.trigger('change');
+                      },
+                      error: function () {
+                        console.error('Error al cargar usuarios');
+                      }
+                    });
+              }
+
+            cargarDepartamentos();
+            cargarUsuariosResponsables();
+        });
+</script>
