@@ -77,7 +77,6 @@ BEGIN
     DECLARE @idResponsable INT;
     DECLARE @rolSoporte    INT;
 
-    -- Asegúrate de que solo trae uno
     SELECT TOP 1 @rolSoporte = idRol
     FROM Rol
     WHERE tipo = 'Soporte';
@@ -678,6 +677,7 @@ BEGIN
     INNER JOIN Usuario u ON m.idUsuario        = u.idUsuario
     INNER JOIN Activo  a ON m.idActivo         = a.idActivo
     LEFT  JOIN Usuario r ON m.idResponsable    = r.idUsuario
+	 WHERE m.estado = 1
     ORDER BY m.fecha DESC;
 END;
 GO
@@ -784,3 +784,55 @@ AS BEGIN
 	SELECT idDepartamento,nombreDepartamento from Departamento
 END;
 GO
+
+EXEC SP_ObtenerListaDepartamento
+
+
+--Consultar ticket por id
+CREATE OR ALTER PROCEDURE sp_ConsultarMantenimientoHistorial
+    @IdMantenimiento INT
+AS
+BEGIN
+    SELECT 
+       m.idMantenimiento, m.fecha, m.detalle, m.estado,
+		m.idUsuario,
+		m.idActivo,
+		m.idResponsable,
+        u.nombre AS nombreUsuario,
+        a.nombreActivo AS nombreActivo,
+        r.nombre AS nombreResponsable
+    FROM Mantenimiento m
+    INNER JOIN Usuario u ON m.idUsuario = u.idUsuario
+    INNER JOIN Activo a ON m.idActivo = a.idActivo
+    LEFT JOIN Usuario r ON m.idResponsable = r.idUsuario
+    WHERE m.idMantenimiento = @IdMantenimiento
+END;
+GO
+
+-- Mantenimientos
+-- 1) Historial mantenimiento
+CREATE OR ALTER PROCEDURE SPP_ConsultarTodosMantenimientosHistorial
+AS
+BEGIN
+    SELECT 
+        m.idMantenimiento,
+        m.fecha,
+        m.detalle,
+        m.estado,
+        m.idUsuario,
+        u.nombre + ' ' + u.apellido AS nombreUsuario,
+        m.idActivo,
+        a.nombreActivo,
+        m.idResponsable, 
+        r.nombre + ' ' + r.apellido AS nombreResponsable
+    FROM Mantenimiento m
+    INNER JOIN Usuario u ON m.idUsuario        = u.idUsuario
+    INNER JOIN Activo  a ON m.idActivo         = a.idActivo
+    LEFT  JOIN Usuario r ON m.idResponsable    = r.idUsuario
+    WHERE m.estado = 0
+    ORDER BY m.fecha ASC;
+END;
+GO
+
+SELECT * FROM Mantenimiento
+EXEC SPP_ConsultarTodosMantenimientosHistorial

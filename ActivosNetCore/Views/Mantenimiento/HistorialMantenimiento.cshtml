@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
-    ViewData["Title"] = "Lista de Mantenimientos";
+    ViewData["Title"] = "Historial de Mantenimientos";
 }
 
 <div class="content-wrap mt-3 p-3">
@@ -12,7 +12,7 @@
 
             <!-- Listado de Mantenimientos -->
             <div class="card">
-                <h2>Lista de Mantenimientos</h2>
+                <h2>Historial de Mantenimientos</h2>
                 <div class="card-body">
                     <div class="table-responsive">
                         @if (Model != null && Model.Any())
@@ -32,7 +32,7 @@
                                 <tbody>
                                     @foreach (var mantenimiento in Model)
                                     {
-                                        var detallesUrl = Url.Action("DetallesMantenimiento", "Mantenimiento", new { idMantenimiento = mantenimiento.IdMantenimiento });
+                                        var detallesUrl = Url.Action("DetallesMantenimientoHistorial", "Mantenimiento", new { idMantenimiento = mantenimiento.IdMantenimiento });
                                         <tr>
                                             <td>@mantenimiento.IdMantenimiento</td>
                                             <td>@mantenimiento.Fecha</td>
@@ -50,7 +50,7 @@
                         }
                         else
                         {
-                            <div id="noResults" class="alert alert-warning">No se encontro ningun Mantenimiento a resolver.</div>
+                            <div id="noResults" class="alert alert-warning">No se encontro ningun Mantenimiento realizado.</div>
                         }
                     </div>
                 </div>

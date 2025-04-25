@@ -61,38 +61,21 @@
                                                readonly
                                                asp-for="NombreActivo" />
                                     </div>
-
+                                    <!-- Botones de acción -->
                                     <div class="d-grid gap-5 align-self-end mt-3 row">
-                                        <div class="col-4">
-                                        <form asp-action="EliminarMantenimiento"
-                                              asp-controller="Mantenimiento"
-                                              method="post"
-                                              class="me-2">
-                                            <input type="hidden" name="IdMantenimiento" value="@Model.IdMantenimiento" />
-                                            <button type="submit" class="btn btn-dark" id="btnEliminar">
-                                                Eliminar
-                                            </button>
-                                        </form>
+                                        <div class="col-5">
+                                            <form asp-action="EliminarMantenimiento" asp-controller="Mantenimiento" method="post">
+                                                <input type="hidden" asp-for="IdMantenimiento" />
+                                                <button type="submit" class="btn btn-dark" id="btnEliminar">Eliminar</button>
+                                            </form>
                                         </div>
-                                        <div class="col-4">
-                                        <a asp-action="EditarMantenimiento"
-                                           asp-controller="Mantenimiento"
-                                           asp-route-idMantenimiento="@Model.IdMantenimiento"
-                                           class="btn btn-secondary mr-1">
-                                            Editar
-                                        </a>
-                                            </div>
-                                            <div class="col-4">
-                                        <a asp-action="ListaMantenimiento"
-                                           asp-controller="Mantenimiento"
-                                           class="btn btn-secondary">
-                                            Volver
-                                        </a>
-                                                </div>
-                                    </div>
-
-                                    </div>
-
+                                        <div class="col-5">
+                                            <a asp-action="ListaMantenimiento"
+                                               asp-controller="Mantenimiento"
+                                               class="btn btn-secondary">
+                                                Volver
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -102,11 +85,11 @@
             </div>
         </div>
     </div>
-
+</div>
 
 <script>
     $("#btnEliminar").click(function (e) {
-        var confirmar = confirm("¿Estás seguro de que deseas eliminar este mantenimiento?");
+        var confirmar = confirm("¿Estás seguro de que deseas eliminar el mantenimiento?");
         if (confirmar) {
             $("form").submit();
         } else {
@@ -114,5 +97,4 @@
         }
     });
 </script>
-
 

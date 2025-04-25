@@ -40,8 +40,8 @@
                                         <div class="mb-3">
                                             <label class="form-label">Estado:</label>
                                             <select asp-for="Estado" class="form-control">
-                                                <option value="true">Activo</option>
-                                                <option value="false">Inactivo</option>
+                                                <option value="true">Sin realizar</option>
+                                                <option value="false">Realizado</option>
                                             </select>
                                         </div>
 
@@ -74,7 +74,6 @@
                                 </div>
                             </form>
 
-                            <!-- Formulario de eliminación -->
                             <form asp-action="EliminarActivo"
                                   asp-controller="Mantenimiento"
                                   method="post"

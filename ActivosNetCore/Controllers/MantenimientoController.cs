@@ -46,6 +46,24 @@ namespace ActivosNetCore.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> HistorialMantenimiento(MantenimientoModel? model)
+        {
+            using (var api = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Mantenimiento/HistorialMantenimiento";
+                var result = await api.GetAsync(url);
+
+                if (result.IsSuccessStatusCode)
+                {
+                    var Mantenimientos = await result.Content.ReadFromJsonAsync<List<MantenimientoModel>>();
+                    return View(Mantenimientos);
+                }
+            }
+            var Mantenimiento = new List<MantenimientoModel>();
+            return View(Mantenimiento);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> AgregarMantenimiento()
         {
             // 1. Obtener lista de activos desde tu API
@@ -126,6 +144,14 @@ namespace ActivosNetCore.Controllers
                 : NotFound("Mantenimiento no encontrado");
         }
 
+        [HttpGet]
+        public IActionResult DetallesMantenimientoHistorial(int idMantenimiento)
+        {
+            var Mantenimiento = _utilitarios.ObtenerInfoMantenimiento(idMantenimiento);
+            return Mantenimiento != null
+                ? View(Mantenimiento)
+                : NotFound("Mantenimiento no encontrado");
+        }
 
         [HttpGet]
         public async Task<IActionResult> EditarMantenimiento(int idMantenimiento)
@@ -178,23 +204,39 @@ namespace ActivosNetCore.Controllers
         }
 
         [HttpPost]
-        public IActionResult EliminarActivo(MantenimientoModel model)
+        public IActionResult EliminarMantenimiento(MantenimientoModel model)
         {
-            using (var api = _httpClient.CreateClient())
+            try
             {
-                var url = _configuration.GetSection("Variables:urlApi").Value + "Mantenimiento/EliminarMantenimiento";
-                var result = api.PutAsJsonAsync(url, model).Result;
-                if (result.IsSuccessStatusCode)
+                using (var api = _httpClient.CreateClient())
                 {
-                    return RedirectToAction("ListaMantenimiento", "Mantenimiento");
-                }
-                else
-                {
-                    return RedirectToAction("ListaMantenimiento", "Mantenimiento");
+                    // Solo necesitamos el ID para eliminar
+                    var mantenimientoParaEliminar = new MantenimientoModel
+                    {
+                        IdMantenimiento = model.IdMantenimiento
+                    };
+
+                    var url = _configuration.GetSection("Variables:urlApi").Value + "Mantenimiento/EliminarMantenimiento";
+                    var result = api.DeleteAsync(url + "/" + model.IdMantenimiento).Result;
+
+                    if (result.IsSuccessStatusCode)
+                    {
+                        TempData["Mensaje"] = "Mantenimiento eliminado correctamente";
+                        return RedirectToAction("ListaMantenimiento");
+                    }
+                    else
+                    {
+                        TempData["Error"] = "No se pudo eliminar el mantenimiento";
+                        return RedirectToAction("DetalleMantenimiento", new { idMantenimiento = model.IdMantenimiento });
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Error al eliminar: " + ex.Message;
+                return RedirectToAction("DetalleMantenimiento", new { idMantenimiento = model.IdMantenimiento });
+            }
         }
-
 
         [HttpGet]
         public async Task<IActionResult> ListaMantenimientoIndividual(int idMantenimiento)

@@ -18,9 +18,7 @@
                             <form asp-action="EditarTicket" asp-controller="Ticket" method="post">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" asp-for="IdTicket" />
-
                                 <div class="row g-5 p-3 mb-4 border-bottom">
-                                    <!-- Columna izquierda -->
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label">Urgencia:</label>
@@ -39,8 +37,6 @@
                                             <input asp-for="Fecha" class="form-control" readonly />
                                         </div>
                                     </div>
-
-                                    <!-- Columna derecha -->
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label">Solucionado:</label>
@@ -78,8 +74,6 @@
                                     <a asp-action="ListaTicket" class="btn btn-secondary">Volver</a>
                                 </div>
                             </form>
-
-                            <!-- Formulario de eliminación -->
                             <form asp-action="EliminarActivo"
                                   asp-controller="Ticket"
                                   method="post"
