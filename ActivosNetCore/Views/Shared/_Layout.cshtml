@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿﻿
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -60,13 +61,13 @@
                         <li class="label">Historial</li>
                         <li><a href="#"><i class="ti-align-left"></i>Historial de Activos</a></li>
                         <li><a asp-controller="Mantenimiento" asp-action="HistorialMantenimiento"><i class="ti-align-left"></i>Historial de Mantenimiento</a></li>
-                        <li><a href="#"><i class="ti-align-left"></i>Historial de Ticketes</a></li>
+                        <li><a asp-controller="Ticket" asp-action="HistorialTicket"><i class="ti-align-left"></i>Historial de Ticket</a></li>
                         <li><a href="#"><i class="ti-align-left"></i>Historial de Auditoría</a></li>
                         <hr>
                     }
-                   
-                    
-                    
+
+
+
                     <li><a asp-controller="Login" asp-action="CerrarSesion"><i class="ti-close"></i> Logout</a></li>
                 </ul>
             </div>

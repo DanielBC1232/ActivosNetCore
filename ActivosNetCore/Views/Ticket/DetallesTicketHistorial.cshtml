@@ -1,0 +1,110 @@
+﻿@model ActivosNetCore.Models.TicketModel
+
+@{
+    ViewData["Title"] = "Detalles del Ticket";
+}
+
+@if (TempData["MensajeOk"] != null)
+{
+    <div class="alert alert-success text-center">
+        @TempData["MensajeOk"]
+    </div>
+}
+@if (TempData["MensajeError"] != null)
+{
+    <div class="alert alert-danger text-center">
+        @TempData["MensajeError"]
+    </div>
+}
+
+<div class="content-wrap mt-5 p-3">
+    <div class="main">
+        <div class="container-fluid overflow-hidden">
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="card-header bg-secondary">
+                        <h3 class="text-white">Detalles del Ticket</h3>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="row g-5 p-3 mb-4 border-bottom">
+                                <!-- Columna izquierda -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Urgencia del Ticket:</label>
+                                        <input asp-for="Urgencia" class="form-control" readonly />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Detalle:</label>
+                                        <textarea asp-for="Detalle" class="form-control" rows="3" readonly></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Fecha:</label>
+                                        <input asp-for="Fecha" class="form-control" readonly />
+                                    </div>
+                                </div>
+                                <!-- Columna derecha -->
+                                <div class="col-md-6 d-flex flex-column">
+                                    <div class="mb-3">
+                                        <label class="form-label">Solucionado:</label>
+                                        <input type="text"
+                                               class="form-control"
+                                               readonly
+                                               value="@(Model.Solucionado ? "Sí" : "No")" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Comentario del Técnico:</label>
+                                        <textarea asp-for="DetalleTecnico" class="form-control" rows="3" readonly></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Creado por:</label>
+                                        <input asp-for="NombreUsuario" class="form-control" readonly />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Asignado a:</label>
+                                        <input asp-for="NombreResponsable" class="form-control" readonly />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Departamento:</label>
+                                        <input asp-for="NombreDepartamento" class="form-control" readonly />
+                                    </div>
+                                    <!-- Botones de acción -->
+                                    <div class="d-grid gap-5 align-self-end mt-3 row">
+                                        <div class="col-5">
+                                            <form asp-action="EliminarTicket"
+                                                  asp-controller="Ticket"
+                                                  method="post"
+                                                  class="me-2">
+                                                <input type="hidden" name="IdTicket" value="@Model.IdTicket" />
+                                                <button type="submit" class="btn btn-dark" id="btnEliminar">
+                                                    Eliminar
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <div class="col-5">
+                                            <a asp-action="HistorialTicket"
+                                               asp-controller="Ticket"
+                                               class="btn btn-secondary">
+                                                Volver
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> 
+                        </div> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <script>
+        $("#btnEliminar").click(function (e) {
+            if (!confirm("¿Estás seguro de que deseas eliminar el Ticket?")) {
+                e.preventDefault();
+            }
+        });
+    </script>
+
