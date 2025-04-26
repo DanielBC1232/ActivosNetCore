@@ -53,6 +53,13 @@
                         <li><a asp-controller="Activos" asp-action="AgregarActivo"><i class="ti-plus"></i>Agregar Activo</a></li>
                         <hr>
                     }
+                    <li class="label">Mi perfil</li>
+                    <li>
+                        <a asp-controller="Usuarios" asp-action="DetallesUsuario" asp-route-idUsuario="@(Context.Session.GetInt32("UserId") ?? 0)">
+                            <i class="ti-view-list-alt"></i>Mi Perfil
+                        </a>
+                    </li>
+                    <hr>
                     <li class="label">Ticketes</li>
                     @if (Context.Session.GetString("Rol") == "Administrador" || Context.Session.GetString("Rol") == "Soporte")
                     {

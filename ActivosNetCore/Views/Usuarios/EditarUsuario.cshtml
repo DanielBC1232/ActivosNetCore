@@ -54,11 +54,11 @@
                                     <div class="col-md-6 d-flex flex-column">
                                         <div class="mb-3">
                                             <label class="form-label">Cedula:</label>
-                                            <input type="text" class="form-control" asp-for="cedula" name="cedula" required/>
+                                            <input type="text" class="form-control" asp-for="cedula" name="cedula" required />
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">correo:</label>
-                                            <input type="email" class="form-control" asp-for="correo" name="correo" required/>
+                                            <input type="email" class="form-control" asp-for="correo" name="correo" required />
                                         </div>
                                         <div class="mb-3">
                                             <label for="idDepartamento" class="form-label">Departamento:</label>
@@ -69,37 +69,44 @@
 
                                         <div class="d-grid gap-5 align-self-end mt-3 row">
                                             <div class="col-6">
-                                                <button type="submit" class="btn btn-secondary text-white" asp-controller="Usuarios" asp-action="EditarUsuario">Guardar Cambios</button>
+                                                @if (Context.Session.GetString("Rol") == "Administrador" || Context.Session.GetString("Rol") == "Soporte")
+                                                {
+                                                    <button type="submit" class="btn btn-secondary text-white" asp-controller="Usuarios" asp-action="EditarUsuario">Guardar Cambios</button>
+                                                }
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </form>
-                            <div class="d-flex flex-column">
-                                <form asp-controller="Usuarios" asp-action="ActualizarContrasenna">
-                                    <div class="row">
-                                        <div class="col-4">
-                                            <label class="form-label">Contraseña:</label>
-                                            <input type="password" class="form-control" asp-for="contrasenna" required/>
-                                        </div>
-                                        <div class="col-4">
-                                            <label class="form-label">Confirmar contraseña:</label>
-                                            <input type="password" class="form-control" asp-for="contrasennaConfirmar" required/>
-                                        </div>
-                                        <div class="col-4 d-flex">
-                                            <div class="mt-auto">
-                                                <button type="submit" class="btn btn-primary text-white">Cambiar Contraseña</button>
+                            @if (Context.Session.GetInt32("UserId") == Model.idUsuario)
+                            {
+                                <div class="d-flex flex-column">
+                                    <form asp-controller="Usuarios" asp-action="ActualizarContrasenna">
+                                        <div class="row">
+                                            <div class="col-4">
+                                                <label class="form-label">Contraseña:</label>
+                                                <input type="password" class="form-control" asp-for="contrasenna" required />
+                                            </div>
+                                            <div class="col-4">
+                                                <label class="form-label">Confirmar contraseña:</label>
+                                                <input type="password" class="form-control" asp-for="contrasennaConfirmar" required />
+                                            </div>
+                                            <div class="col-4 d-flex">
+                                                <div class="mt-auto">
+
+                                                    <button type="submit" class="btn btn-primary text-white">Cambiar Contraseña</button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    @if (@ViewBag.Msj != null)
-                                    {
-                                        <div class="alert alert-warning text-center" role="alert">
-                                            @ViewBag.Msj
-                                        </div>
-                                    }
-                                </form>
-                            </div>
+                                        @if (@ViewBag.Msj != null)
+                                        {
+                                            <div class="alert alert-warning text-center" role="alert">
+                                                @ViewBag.Msj
+                                            </div>
+                                        }
+                                    </form>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>

@@ -119,6 +119,15 @@ namespace ActivosNetCore.Controllers
         [HttpGet]
         public IActionResult DetallesUsuario(int idUsuario)
         {
+            //if (idUsuario == null)//si no recibe parametro, toma el id de sesion (mi perfil)
+            //{
+            //    var idUsuarioSesion = Context.Session.GetString("idUsuario");
+
+            //    if (string.IsNullOrEmpty(idUsuarioSesion) || !int.TryParse(idUsuarioSesion, out int idUsuarioParseado))
+            //        return NotFound("Usuario no válido.");
+
+            //    idUsuario = idUsuarioParseado;
+            //}
             var response = _utilitarios.ObtenerInfoUsuario(idUsuario) ?? new UsuarioModel();
 
             if (response == null)
