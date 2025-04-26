@@ -9,10 +9,13 @@ namespace ActivosAPI.Controllers
     [ApiController]
     public class ErrorController : ControllerBase
     {
+
+        // Endpoint para capturar errores del proyecto
         [HttpPost]
         [Route("CapturarError")]
         public IActionResult CapturarError()
         {
+            // Obtener detalles del error actual del contexto HTTP
             var ex = HttpContext.Features.Get<IExceptionHandlerFeature>();
 
             var respuesta = new RespuestaModel();
