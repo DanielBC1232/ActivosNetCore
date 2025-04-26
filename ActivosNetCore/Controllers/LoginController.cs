@@ -31,7 +31,7 @@ namespace ActivosNetCore.Controllers
                 var result = response.Content.ReadFromJsonAsync<List<DepartamentoModel>>().Result;
 
                 if (result != null)
-                { 
+                {
                     return Json(result);
                 }
             }
@@ -97,6 +97,42 @@ namespace ActivosNetCore.Controllers
             HttpContext.Session.Clear();
             return RedirectToAction("IniciarSesion", "Login");
         }
+        #endregion
+
+        #region Recuperacion de contrasena
+
+
+        [HttpGet]
+        public IActionResult RecuperarContrasenna()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult RecuperarContrasenna(UsuarioModel model)
+        {
+            var correo = new { correo = model.correo };
+            using (var api = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Login/RecuperarContrasenna";
+                var response = api.PostAsJsonAsync(url, correo).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+                    if (result != null && result.Indicador)
+                        return RedirectToAction("IniciarSesion", "Login");
+                    else
+                        ViewBag.Msj = result!.Mensaje;
+                }
+                else
+                    ViewBag.Msj = "No se pudo completar su petición";
+            }
+
+            return View();
+        }
+
         #endregion
 
     }

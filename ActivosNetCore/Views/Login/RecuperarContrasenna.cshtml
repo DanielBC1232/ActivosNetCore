@@ -1,0 +1,35 @@
+﻿@model UsuarioModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutExterno.cshtml";
+}
+
+<div class="container d-flex align-items-center justify-content-center p-3" style="min-height: 80vh">
+    <div class="bg-white shadow-sm p-5" style="min-width:50vh">
+        <div class="mx-auto">
+            <h5 class="text-center">Recuperar Contraseña</h5>
+        </div>
+        <form asp-action="RecuperarContrasenna" asp-controller="Login" method="post">
+            <div class="row d-flex flex-column gap-3">
+
+                <div class="mb-4">
+                    <input type="email" class="form-control" asp-for="correo" placeholder="Correo">
+                    <span asp-validation-for="correo" class="text-danger"></span>
+                </div>
+                @if (ViewBag.Msj != null)
+                {
+                    <div class="alert alert-danger text-white">
+                        @ViewBag.Msj
+                    </div>
+                }
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary mb-4">Enviar</button>
+                    <p>
+                        ¿Ya tienes una cuenta?
+                        <a class="text-blue" href="@Url.Action("IniciarSesion","Login")">Inicia Sesión</a>
+                    </p>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

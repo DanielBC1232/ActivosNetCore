@@ -20,6 +20,8 @@ namespace ActivosNetCore.Models
 
         public string? contrasenna { get; set; }
 
+        public string? contrasennaConfirmar { get; set; }
+
         public bool? estado { get; set; }
 
         //FK

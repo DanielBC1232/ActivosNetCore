@@ -10,13 +10,14 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Data;
 using ActivosAPI.Dependencias;
+using System.Net.Mail;
 
 namespace ActivosAPI.Controllers
 {
     [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
-    public class LoginController : Controller
+    public class LoginController : ControllerBase
     {
         private readonly IConfiguration _configuration;
         private readonly IUtilitarios _utilitarios;
@@ -84,8 +85,60 @@ namespace ActivosAPI.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("RecuperarContrasenna")]
+        public IActionResult RecuperarContrasenna(UsuarioModel model)
+        {
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                //buscar al usuario
+                var result = context.QueryFirstOrDefault<UsuarioModel>("SP_ValidarUsuarioCorreo",
+                    new { model.correo });
+
+                var respuesta = new RespuestaModel();
+
+                if (result != null)
+                {
+                    //Autogenerar contraseña
+                    var Codigo = GenerarCodigo();
+                    var Contrasenna = Encrypt(Codigo);
+
+                    //Actualizar contraseña
+                    context.Execute("SP_ActualizarContrasenna", new { result.idUsuario, Contrasenna });
+
+                    //Enviar correo
+                    var Contenido = "Hola " + result.nombreCompleto + ". Se ha generado el siguiente código de verificación: " + Codigo;
+
+                    EnviarCorreo(result.correo!, "Recuperáción de contraseña", Contenido);
+
+                    respuesta.Indicador = true;
+                    respuesta.Mensaje = "Su información se ha validado correctamente";
+                    respuesta.Datos = result;
+                }
+                else
+                {
+                    respuesta.Indicador = false;
+                    respuesta.Mensaje = "Su información no se ha validado correctamente";
+                }
+
+                return Ok(respuesta);
+            }
+        }
+
         #region Token
 
+        private string GenerarCodigo()
+        {
+            int length = 8;
+            const string valid = "ABCDEFGHIJKLMNOPQRSTUVWXYZ012456789";
+            StringBuilder res = new StringBuilder();
+            Random rnd = new Random();
+            while (0 < length--)
+            {
+                res.Append(valid[rnd.Next(valid.Length)]);
+            }
+            return res.ToString();
+        }
         private string Encrypt(string texto)
         {
             byte[] iv = new byte[16];
@@ -158,6 +211,32 @@ namespace ActivosAPI.Controllers
         }
 
         #endregion
+
+        private void EnviarCorreo(string destino, string asunto, string contenido)
+        {
+            string cuenta = _configuration.GetSection("Variables:CorreoEmail").Value!;
+            string contrasenna = _configuration.GetSection("Variables:ClaveEmail").Value!;
+
+            MailMessage message = new MailMessage();
+            message.From = new MailAddress(cuenta);
+            message.To.Add(new MailAddress(destino));
+            message.Subject = asunto;
+            message.Body = contenido;
+            message.Priority = MailPriority.Normal;
+            message.IsBodyHtml = true;
+
+            SmtpClient client = new SmtpClient("smtp.gmail.com", 587); //servicio google
+            client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
+            client.EnableSsl = true;
+
+            //No enviar el correo si no hay una contraseña
+            if (!string.IsNullOrEmpty(contrasenna))
+            {
+                client.Send(message);
+            }
+        }
+
+        
 
     }
 }

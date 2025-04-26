@@ -475,6 +475,33 @@ AS BEGIN
 END;
 GO
 
+CREATE OR ALTER PROCEDURE SP_ValidarUsuarioCorreo
+@correo varchar(100)
+AS
+BEGIN
+
+	SELECT	idUsuario,
+			nombre + ' ' + apellido as nombreCompleto,
+			correo
+	FROM	dbo.Usuario
+	WHERE	correo = @correo
+	
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ActualizarContrasenna
+@idUsuario int,
+@contrasenna varchar(50)
+AS
+BEGIN
+	
+	UPDATE Usuario
+	   SET contrasenna = @contrasenna
+	 WHERE idUsuario = @idUsuario
+
+END
+GO
+
 --Inserts de prueba
 INSERT INTO Departamento (nombreDepartamento) VALUES ('Administración');
 INSERT INTO Departamento (nombreDepartamento) VALUES ('Tecnología');

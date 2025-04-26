@@ -3,13 +3,14 @@
     Layout = "~/Views/Shared/_LayoutExterno.cshtml";
 }
 
-<div class="authincation h-100 d-flex align-items-center justify-content-center">
+<div class="authincation h-100 d-flex align-items-center justify-content-center" style="min-height: 80vh">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6">
-                <div class="authincation-content p-4 shadow rounded">
+                <div class="authincation-content p-4 shadow-sm rounded">
                     <div class="auth-form">
-                        <h4 class="text-center mb-4">Iniciar sesión con mi cuenta</h4>
+                        <h3 class="text-center mb-4 text-primary">Iniciar sesión</h3>
+                        <hr class="text-secondary pb-4"/>
                         @if (ViewBag.Msj != null)
                         {
                             <div class="alert alert-danger text-center">
@@ -27,16 +28,13 @@
                             </div>
                             <div class="d-flex justify-content-between mt-3 mb-3">
                                 <div>
-                                    <a href="page-forgot-password.html" class="text-decoration-none">¿Olvidaste la contraseña?</a>
+                                    <a class="text-decoration-none" href="@Url.Action("RecuperarContrasenna","Login")">¿Olvidaste la contraseña?</a>
                                 </div>
                             </div>
                             <div class="text-center">
                                 <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
                             </div>
                         </form>
-                        <div class="text-center mt-3">
-                            <p>¿No tienes una cuenta? <a class="text-primary text-decoration-none" href="#">Consulta con un Admin para ello.</a></p>
-                        </div>
                     </div>
                 </div>
             </div>
