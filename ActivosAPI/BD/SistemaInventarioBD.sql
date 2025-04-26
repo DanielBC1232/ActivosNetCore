@@ -147,6 +147,7 @@ BEGIN
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
     INNER JOIN Departamento d ON t.idDepartamento = d.idDepartamento
     LEFT JOIN Usuario r ON t.idResponsable = r.idUsuario
+	WHERE t.solucionado = 0
     ORDER BY t.fecha DESC
 END
 
@@ -665,9 +666,9 @@ BEGIN
         t.idUsuario,
         t.idDepartamento,
         t.idResponsable,
-        u.nombre AS nombreUsuario,
+       u.nombre + ' ' + u.apellido AS nombreUsuario,
         d.nombreDepartamento,
-        r.nombre AS nombreResponsable
+        r.nombre + ' ' + r.apellido AS nombreResponsable
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
     INNER JOIN Departamento d ON t.idDepartamento = d.idDepartamento
@@ -700,7 +701,7 @@ BEGIN
 		t.idResponsable,
         t.detalleTecnico,
 		u.nombre + ' ' + u.apellido AS nombreUsuario,
-        COALESCE(r.nombre, 'Sin asignar') AS nombreResponsable,
+        COALESCE(r.nombre + ' ' + r.apellido , 'Sin asignar') AS nombreResponsable,
         d.nombreDepartamento
     FROM Ticket t
     INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
@@ -788,9 +789,9 @@ BEGIN
 		m.idUsuario,
 		m.idActivo,
 		m.idResponsable,
-        u.nombre AS nombreUsuario,
+        u.nombre + ' ' + u.apellido AS nombreUsuario,
         a.nombreActivo AS nombreActivo,
-        r.nombre AS nombreResponsable
+       r.nombre + ' ' + r.apellido AS nombreResponsable
     FROM Mantenimiento m
     INNER JOIN Usuario u ON m.idUsuario = u.idUsuario
     INNER JOIN Activo a ON m.idActivo = a.idActivo
@@ -930,7 +931,7 @@ GO
 EXEC SP_ObtenerListaDepartamento
 
 
---Consultar ticket por id
+--Consultar mantenimiento por id
 CREATE OR ALTER PROCEDURE sp_ConsultarMantenimientoHistorial
     @IdMantenimiento INT
 AS
@@ -940,9 +941,9 @@ BEGIN
 		m.idUsuario,
 		m.idActivo,
 		m.idResponsable,
-        u.nombre AS nombreUsuario,
+       u.nombre + ' ' + u.apellido AS nombreUsuario,
         a.nombreActivo AS nombreActivo,
-        r.nombre AS nombreResponsable
+        u.nombre + ' ' + u.apellido AS nombreResponsable
     FROM Mantenimiento m
     INNER JOIN Usuario u ON m.idUsuario = u.idUsuario
     INNER JOIN Activo a ON m.idActivo = a.idActivo
@@ -976,11 +977,135 @@ BEGIN
 END;
 GO
 
+-----------------------------------------
 SELECT * FROM Mantenimiento
 EXEC SPP_ConsultarTodosMantenimientosHistorial
 
 
+<<<<<<< Updated upstream
 
+
+CREATE TABLE AuditoriaGeneral (
+    idAuditoria INT PRIMARY KEY IDENTITY,
+    fechaAccion DATETIME NOT NULL,
+    tabla VARCHAR(50) NOT NULL,
+    accion VARCHAR(20) NOT NULL,
+    idRegistro INT NOT NULL,
+    idUsuarioSesion INT NOT NULL, -- FK a Usuario
+    CONSTRAINT FK_AuditoriaGeneral_Usuario FOREIGN KEY (idUsuarioSesion) REFERENCES Usuario(idUsuario)
+);
+
+CREATE OR ALTER PROCEDURE sp_RegistrarAuditoriaGeneral
+    @tabla VARCHAR(50),
+    @accion VARCHAR(20),
+    @idRegistro INT,
+    @idUsuarioSesion INT
+AS
+BEGIN
+    INSERT INTO AuditoriaGeneral (fechaAccion, tabla, accion, idRegistro, idUsuarioSesion)
+    VALUES (GETDATE(), @tabla, @accion, @idRegistro, @idUsuarioSesion)
+END
+
+CREATE OR ALTER PROCEDURE sp_ConsultarAuditoriaGeneral
+    @tabla VARCHAR(50) = NULL,
+    @fechaInicio DATE = NULL,
+    @fechaFin DATE = NULL,
+    @idUsuarioSesion INT = NULL,
+    @accion VARCHAR(20) = NULL
+AS
+BEGIN
+    SELECT 
+        a.idAuditoria,
+        a.fechaAccion,
+        a.tabla,
+        a.accion,
+        a.idRegistro,
+        u.nombre + ' ' + u.apellido AS nombreUsuario 
+    FROM AuditoriaGeneral a
+    INNER JOIN Usuario u ON a.idUsuarioSesion = u.idUsuario
+    WHERE
+        (@tabla IS NULL OR a.tabla = @tabla) AND
+        (@fechaInicio IS NULL OR CAST(a.fechaAccion AS DATE) >= @fechaInicio) AND
+        (@fechaFin IS NULL OR CAST(a.fechaAccion AS DATE) <= @fechaFin) AND
+        (@idUsuarioSesion IS NULL OR a.idUsuarioSesion = @idUsuarioSesion) AND
+        (@accion IS NULL OR a.accion = @accion)
+    ORDER BY a.fechaAccion DESC
+END
+
+
+CREATE OR ALTER PROCEDURE SP_ValidarUsuarioCorreo
+@correo varchar(100)
+AS
+BEGIN
+
+	SELECT	idUsuario,
+			nombre + ' ' + apellido as nombreCompleto,
+			correo
+	FROM	dbo.Usuario
+	WHERE	correo = @correo
+	
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ActualizarContrasenna
+@idUsuario int,
+@contrasenna varchar(50)
+AS
+BEGIN
+	
+	UPDATE Usuario
+	   SET contrasenna = @contrasenna
+	 WHERE idUsuario = @idUsuario
+
+END
+GO
+-- 1) Historial Tickets
+CREATE OR ALTER PROCEDURE SPP_ConsultarTodosTicketsHistorial
+AS
+BEGIN
+    SELECT 
+        t.idTicket, t.urgencia, t.detalle, t.fecha, t.solucionado, t.estado,
+        t.detalleTecnico,
+		t.idUsuario,
+		t.idDepartamento,
+		t.idResponsable,
+        u.nombre + ' ' + u.apellido AS nombreUsuario,
+        d.nombreDepartamento,
+        r.nombre + ' ' + r.apellido AS nombreResponsable
+    FROM Ticket t
+    INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
+    INNER JOIN Departamento d ON t.idDepartamento = d.idDepartamento
+    LEFT JOIN Usuario r ON t.idResponsable = r.idUsuario
+	WHERE t.solucionado = 1
+    ORDER BY t.fecha DESC
+END;
+GO
+
+EXEC SPP_ConsultarTodosTicketsHistorial
+
+--Consultar ticket por id
+CREATE OR ALTER PROCEDURE spp_ConsultarTicketHistorial
+    @IdTicket INT
+AS
+BEGIN
+    SELECT 
+        t.idTicket, t.urgencia, t.detalle, t.fecha, t.solucionado, t.estado,
+        t.detalleTecnico,
+		t.idUsuario,
+		t.idDepartamento,
+		t.idResponsable,
+        u.nombre + ' ' + u.apellido AS nombreUsuario,
+        d.nombreDepartamento,
+        r.nombre + ' ' + r.apellido AS nombreResponsable
+    FROM Ticket t
+    INNER JOIN Usuario u ON t.idUsuario = u.idUsuario
+    INNER JOIN Departamento d ON t.idDepartamento = d.idDepartamento
+    LEFT JOIN Usuario r ON t.idResponsable = r.idUsuario
+    WHERE t.idTicket = @IdTicket
+END;
+GO
+
+EXEC spp_ConsultarTicketHistorial 7
 
 CREATE TABLE AuditoriaGeneral (
     idAuditoria INT PRIMARY KEY IDENTITY,
