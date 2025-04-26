@@ -194,6 +194,45 @@ namespace ActivosNetCore.Controllers
         }
 
         [HttpPost]
+        public IActionResult ActualizarContrasenna(UsuarioModel model)
+        {
+            if (model.contrasenna != model.contrasennaConfirmar)
+            {
+                ViewBag.Msj = "Las contraseñas deben ser iguales";
+                return View();
+            }
+
+            using (var api = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Usuarios/ActualizarContrasenna";
+
+                model.contrasenna = _utilitarios.Encrypt(model.contrasenna!);// encriptar
+
+                var contrasenna = new { contrasenna = model.contrasenna }; //extraer contrasena y crear objeto
+                // El id de usuario se envia en token para el where=
+                Console.WriteLine(contrasenna);
+                api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+                var response = api.PutAsJsonAsync(url, contrasenna).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+
+                    if (result != null && result.Indicador)
+                    {
+                        return RedirectToAction("ListaUsuarios", "Usuarios");
+                    }
+                    else
+                        ViewBag.Msj = result!.Mensaje;
+                }
+                else
+                    ViewBag.Msj = "No se pudo completar su petición";
+            }
+
+            return View();
+        }
+
+        [HttpPost]
         public IActionResult EliminarUsuario(UsuarioModel model)
         {
             var idUsuarioSesion = HttpContext.Session.GetInt32("UserId");

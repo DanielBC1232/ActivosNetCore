@@ -170,6 +170,34 @@ namespace ActivosAPI.Controllers
         }
 
         [HttpPut]
+        [Route("ActualizarContrasenna")]
+        public IActionResult ActualizarContrasenna(UsuarioModel model)
+        {
+            var idUsuario = _utilitarios.ObtenerUsuarioFromToken(User.Claims);
+
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                var result = context.Execute("SP_ActualizarContrasenna",
+                    new { idUsuario, model.contrasenna });
+
+                var respuesta = new RespuestaModel();
+
+                if (result > 0)
+                {
+                    respuesta.Indicador = true;
+                    respuesta.Mensaje = "Información actualizada";
+                }
+                else
+                {
+                    respuesta.Indicador = false;
+                    respuesta.Mensaje = "No se actualizó la información correctamente";
+                }
+
+                return Ok(respuesta);
+            }
+        }
+
+        [HttpPut]
         [Route("EliminarUsuario")]
         public IActionResult EliminarUsuario(UsuarioModel model)
         {
