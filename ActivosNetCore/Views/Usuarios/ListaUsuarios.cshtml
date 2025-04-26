@@ -75,7 +75,7 @@
 
 @section Scripts {
     <script>
-        $(function () {
+               $(function () {
           $('#departamentoFilter, #rolFilter').select2({
             placeholder: function(){
               return $(this).find('option:selected').text();
@@ -83,16 +83,16 @@
             allowClear: false,
             width: '100%'
           });
+
           function parseOrZero(val) {
             return val && val !== "" ? parseInt(val, 10) : 0;
           }
+
           function cargarDepartamentos() {
             const $sel = $('#departamentoFilter');
             const pre = parseOrZero($sel.data('selected'));
 
-            // reset
-            $sel.empty()
-                .append(`<option value="0"${pre===0?' selected':''}>Seleccionar</option>`);
+            $sel.empty().append(`<option value="0"${pre===0?' selected':''}>Seleccionar</option>`);
 
             $.ajax({
               url: '@Url.Action("ObtenerListaDepartamento", "Login")',
@@ -102,7 +102,6 @@
                   const sel = pre === d.idDepartamento ? ' selected' : '';
                   $sel.append(`<option value="${d.idDepartamento}"${sel}>${d.nombreDepartamento}</option>`);
                 });
-                // refresca Select2
                 $sel.trigger('change');
               },
               error: function () {
@@ -111,21 +110,14 @@
             });
           }
 
-          $('#filtrosForm').on('submit', function (e) {
-          e.preventDefault();
-          const filtros = {
-              nombreCompleto: $('input[name="nombreCompleto"]').val().trim() || "",
-              cedula:         $('input[name="cedula"]').val().trim() ||"",
-              idDepartamento: parseOrZero($('#departamentoFilter').val()),
-              idRol:          parseOrZero($('#rolFilter').val())
-            };
-            
+          function cargarUsuarios(filtros) {
+            const $tb = $('#usuariosTable tbody').empty();
+
             $.ajax({
               url: '@Url.Action("ObtenerUsuarios", "Usuarios")',
               type: 'POST',
               data: filtros,
               success: function (users) {
-                const $tb = $('#usuariosTable tbody').empty();
                 if (users && users.length) {
                   users.forEach(u => {
                     const detallesUrl = "@Url.Action("DetallesUsuario", "Usuarios")" + "?idUsuario=" + u.idUsuario;
@@ -139,27 +131,42 @@
                         <td>
                             <a class="btn btn-primary text-white" href="${detallesUrl}">Detalles</a>
                         </td>
-
                       </tr>
                     `);
                   });
                 } else {
-                  $tb.append(`
-                    <tr>
-                      <td colspan="5" class="text-center">No se encontraron usuarios</td>
-                    </tr>
-                  `);
+                  $tb.append(`<tr><td colspan="6" class="text-center">No se encontraron usuarios</td></tr>`);
                 }
               },
               error: function (xhr, stat, err) {
                 console.error('Error al obtener usuarios:', err);
               }
             });
-          
+          }
+
+          $('#filtrosForm').on('submit', function (e) {
+            e.preventDefault();
+
+            const filtros = {
+              nombreCompleto: $('input[name="nombreCompleto"]').val().trim() || "",
+              cedula: $('input[name="cedula"]').val().trim() || "",
+              idDepartamento: parseOrZero($('#departamentoFilter').val()),
+              idRol: parseOrZero($('#rolFilter').val())
+            };
+
+            cargarUsuarios(filtros);
           });
 
-          // Cargar
           cargarDepartamentos();
+
+          setTimeout(function() {
+            cargarUsuarios({
+              nombreCompleto: "",
+              cedula: "",
+              idDepartamento: 0,
+              idRol: 0
+            });
+          }, 500);
         });
     </script>
 }
