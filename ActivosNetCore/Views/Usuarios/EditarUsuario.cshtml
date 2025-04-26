@@ -39,16 +39,23 @@
                                                 <input asp-for="apellido" type="text" class="form-control" name="apellido" required>
                                             </div>
                                         </div>
+                                        @if (Context.Session.GetString("Rol") == "Admin")
+                                        {
+                                            <div class="mb-3">
+                                                <label class="form-label"><strong>Rol</strong></label>
+                                                <select asp-for="idRol" class="form-control" name="idRol" required>
+                                                    <option selected value="">Seleccione...</option>
+                                                    <option value="1">Administrador</option>
+                                                    <option value="2">Usuario</option>
+                                                    <option value="3">Soporte</option>
+                                                </select>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" asp-for="idRol">
 
-                                        <div class="mb-3">
-                                            <label class="form-label"><strong>Rol</strong></label>
-                                            <select asp-for="idRol" class="form-control" name="idRol" required>
-                                                <option selected value="">Seleccione...</option>
-                                                <option value="1">Administrador</option>
-                                                <option value="2">Usuario</option>
-                                                <option value="3">Soporte</option>
-                                            </select>
-                                        </div>
+                                        }
                                     </div>
 
                                     <div class="col-md-6 d-flex flex-column">
