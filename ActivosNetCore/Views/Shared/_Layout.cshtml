@@ -32,27 +32,41 @@
                 <ul>
                     <div class="logo"><a href="#"><span>Gestor Activos</span></a></div>
                     <hr>
-                    <li class="label">Principal</li>
-                    <li><a asp-controller="Activos" asp-action="ListaActivos"><i class="ti-view-list-alt"></i>Lista de Activos</a></li>
-                    <li><a asp-controller="Activos" asp-action="AgregarActivo"><i class="ti-plus"></i>Agregar Activo</a></li>
-                    <hr>
+                    @if (Context.Session.GetString("Rol") == "Administrador" || Context.Session.GetString("Rol") == "Soporte")
+                    {
+                        <li class="label">Administrador</li>
+                        <li><a asp-controller="Usuarios" asp-action="ListaUsuarios"><i class="ti-key"></i>Usuarios</a></li>
+                        <li><a asp-controller="Usuarios" asp-action="RegistrarCuenta"><i class="ti-plus"></i>Registrar Usuario</a></li>
+                        <hr>
+                        <li class="label">Principal</li>
+                        <li><a asp-controller="Activos" asp-action="ListaActivos"><i class="ti-view-list-alt"></i>Lista de Activos</a></li>
+                        <li><a asp-controller="Activos" asp-action="AgregarActivo"><i class="ti-plus"></i>Agregar Activo</a></li>
+                        <hr>
+                    }
                     <li class="label">Ticketes</li>
-                    <li><a asp-controller="Ticket" asp-action="ListaTicket"><i class="ti-view-list-alt"></i>Lista de Ticketes</a></li>
+                    @if (Context.Session.GetString("Rol") == "Administrador" || Context.Session.GetString("Rol") == "Soporte")
+                    {
+                        <li><a asp-controller="Ticket" asp-action="ListaTicket"><i class="ti-view-list-alt"></i>Lista de Ticketes</a></li>
+                    }
                     <li><a asp-controller="Ticket" asp-action="AgregarTicket"><i class="ti-plus"></i>Crear Ticket</a></li>
                     <hr>
-                    <li class="label">Mantenimientos</li>
-                    <li><a asp-controller="Mantenimiento" asp-action="ListaMantenimiento"><i class="ti-view-list-alt"></i>Lista de Mantenimientos</a></li>
-                    <li><a asp-controller="Mantenimiento" asp-action="AgregarMantenimiento"><i class="ti-plus"></i>Solicitar Mantenimiento</a></li>
-                    <hr>
-                    <li class="label">Historial</li>
-                    <li><a href="#"><i class="ti-align-left"></i>Historial de Activos</a></li>
-                    <li><a asp-controller="Mantenimiento" asp-action="HistorialMantenimiento"><i class="ti-align-left"></i>Historial de Mantenimiento</a></li>
-                    <li><a href="#"><i class="ti-align-left"></i>Historial de Responsables</a></li>
-                    <hr>
-                    <li class="label">Administrador</li>
-                    <li><a asp-controller="Usuarios" asp-action="RegistrarCuenta"><i class="ti-plus"></i>Registrar Usuario</a></li>
-                    <li><a asp-controller="Usuarios" asp-action="ListaUsuarios"><i class="ti-key"></i>Usuarios</a></li>
-                    <hr>
+                    @if (Context.Session.GetString("Rol") == "Administrador" || Context.Session.GetString("Rol") == "Soporte")
+                    {
+                        <li class="label">Mantenimientos</li>
+                        <li><a asp-controller="Mantenimiento" asp-action="ListaMantenimiento"><i class="ti-view-list-alt"></i>Lista de Mantenimientos</a></li>
+                        <li><a asp-controller="Mantenimiento" asp-action="AgregarMantenimiento"><i class="ti-plus"></i>Solicitar Mantenimiento</a></li>
+                        <hr>
+
+                        <li class="label">Historial</li>
+                        <li><a href="#"><i class="ti-align-left"></i>Historial de Activos</a></li>
+                        <li><a asp-controller="Mantenimiento" asp-action="HistorialMantenimiento"><i class="ti-align-left"></i>Historial de Mantenimiento</a></li>
+                        <li><a href="#"><i class="ti-align-left"></i>Historial de Ticketes</a></li>
+                        <li><a href="#"><i class="ti-align-left"></i>Historial de Auditoría</a></li>
+                        <hr>
+                    }
+                   
+                    
+                    
                     <li><a asp-controller="Login" asp-action="CerrarSesion"><i class="ti-close"></i> Logout</a></li>
                 </ul>
             </div>

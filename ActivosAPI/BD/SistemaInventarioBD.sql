@@ -96,6 +96,9 @@ BEGIN
         (urgencia, detalle, fecha, solucionado, estado, idResponsable, idUsuario, idDepartamento)
     VALUES 
         (@urgencia, @detalle, GETDATE(), 0, 1, @idResponsable, @idUsuario, @idDepartamento);
+
+	
+
 END
 GO
 
@@ -195,18 +198,40 @@ GO
 EXEC sp_ListarSoportes
 --Activos --CREATE
 CREATE OR ALTER PROCEDURE SP_AgregarActivo(
-@nombreActivo VARCHAR(100),
-@placa INT,
-@serie VARCHAR(50),
-@descripcion NVARCHAR(1024),
-@idDepartamento	INT,
-@idUsuario INT)
-AS BEGIN
+    @nombreActivo VARCHAR(100),
+    @placa INT,
+    @serie VARCHAR(50),
+    @descripcion NVARCHAR(1024),
+    @idDepartamento INT,
+    @idUsuario INT, -- Usuario relacionado al activo
+    @idUsuarioSesion INT -- Usuario en sesión para auditoría
+)
+AS
+BEGIN
+    -- Validar si la placa ya existe
+    IF EXISTS (SELECT 1 FROM Activo WHERE placa = @placa)
+    BEGIN
+        RAISERROR('Ya existe un activo con esa placa.', 16, 1);
+        RETURN;
+    END
 
-	INSERT INTO Activo(nombreActivo,placa,serie,descripcion,estado,idDepartamento,idUsuario)
-	VALUES (@nombreActivo,@placa,@serie,@descripcion,1,@idDepartamento,@idUsuario);
+    -- Insertar nuevo activo
+    INSERT INTO Activo(nombreActivo, placa, serie, descripcion, estado, idDepartamento, idUsuario)
+    VALUES (@nombreActivo, @placa, @serie, @descripcion, 1, @idDepartamento, @idUsuario);
 
+    -- Capturar ID del activo insertado
+    DECLARE @nuevoIdActivo INT = SCOPE_IDENTITY();
+
+    -- Registrar auditoría
+    EXEC sp_RegistrarAuditoriaGeneral
+        @tabla = 'Activo',
+        @accion = 'Insertar',
+        @idRegistro = @nuevoIdActivo,
+        @idUsuarioSesion = @idUsuarioSesion;
 END;
+GO
+
+
 GO
 
 --READ (Detalle)
@@ -298,37 +323,63 @@ GO
 
 --UPDATE
 CREATE OR ALTER PROCEDURE SP_EditarActivo(
-@idActivo INT,
-@nombreActivo VARCHAR(100),
-@placa VARCHAR(50),
-@serie VARCHAR(50),
-@descripcion NVARCHAR(1024),
-@idDepartamento	INT,
-@idUsuario INT)
-AS BEGIN
+    @idActivo INT,
+    @nombreActivo VARCHAR(100),
+    @placa VARCHAR(50),
+    @serie VARCHAR(50),
+    @descripcion NVARCHAR(1024),
+    @idDepartamento INT,
+    @idUsuario INT,
+    @idUsuarioSesion INT -- Nuevo: para registrar en auditoría
+)
+AS
+BEGIN
+    -- Validar que no haya otra placa igual en otro activo
+    IF EXISTS (SELECT 1 FROM Activo WHERE placa = @placa AND idActivo <> @idActivo)
+    BEGIN
+        RAISERROR('Ya existe otro activo con esa placa.', 16, 1);
+        RETURN;
+    END
 
-	UPDATE Activo SET
-	nombreActivo = @nombreActivo,
-	placa =@placa,
-	serie = @serie,
-	descripcion = @descripcion,
-	idDepartamento = @idDepartamento,
-	idUsuario = @idUsuario
-	WHERE idActivo = @idActivo
+    -- Actualizar activo
+    UPDATE Activo
+    SET
+        nombreActivo = @nombreActivo,
+        placa = @placa,
+        serie = @serie,
+        descripcion = @descripcion,
+        idDepartamento = @idDepartamento,
+        idUsuario = @idUsuario
+    WHERE idActivo = @idActivo;
 
+    -- Registrar auditoría
+    EXEC sp_RegistrarAuditoriaGeneral
+        @tabla = 'Activo',
+        @accion = 'Editar',
+        @idRegistro = @idActivo,
+        @idUsuarioSesion = @idUsuarioSesion;
 END;
 GO
 
+
 --DELETE
 CREATE OR ALTER PROCEDURE SP_EliminarActivo(
-@idActivo INT
+    @idActivo INT,
+    @idUsuarioSesion INT -- Usuario en sesión que elimina
 )
-AS BEGIN
+AS
+BEGIN
+    -- Marcar el activo como inactivo (eliminado lógicamente)
+    UPDATE Activo
+    SET estado = 0
+    WHERE idActivo = @idActivo;
 
-	UPDATE Activo SET
-	estado = 0
-	WHERE idActivo = @idActivo
-
+    -- Registrar auditoría
+    EXEC sp_RegistrarAuditoriaGeneral
+        @tabla = 'Activo',
+        @accion = 'Eliminar',
+        @idRegistro = @idActivo,
+        @idUsuarioSesion = @idUsuarioSesion;
 END;
 GO
 
@@ -395,21 +446,42 @@ GO
 
 --REGISTRAR CUENTA
 CREATE OR ALTER PROCEDURE SP_RegistrarCuenta
-@usuario VARCHAR(100),
-@nombre VARCHAR(100),
-@apellido VARCHAR(100),
-@cedula VARCHAR(10),
-@correo VARCHAR(50),
-@contrasenna NVARCHAR(256),
-@idDepartamento INT,
-@idRol INT
-AS BEGIN
+(
+    @usuario VARCHAR(100),
+    @nombre VARCHAR(100),
+    @apellido VARCHAR(100),
+    @cedula VARCHAR(10),
+    @correo VARCHAR(50),
+    @contrasenna NVARCHAR(256),
+    @idDepartamento INT,
+    @idRol INT,
+    @idUsuarioSesion INT -- Nuevo parámetro para auditoría
+)
+AS
+BEGIN
+    -- Validar que la cédula no exista
+    IF EXISTS (SELECT 1 FROM Usuario WHERE cedula = @cedula)
+    BEGIN
+        RAISERROR('Ya existe un usuario con esa cédula.', 16, 1);
+        RETURN;
+    END
 
-	INSERT INTO Usuario(usuario,nombre,apellido,cedula,correo,contrasenna,idDepartamento,idRol,estado)
-	VALUES (@usuario,@nombre,@apellido,@cedula,@correo,@contrasenna,@idDepartamento,@idRol,1)
+    -- Insertar nuevo usuario
+    INSERT INTO Usuario(usuario, nombre, apellido, cedula, correo, contrasenna, idDepartamento, idRol, estado)
+    VALUES (@usuario, @nombre, @apellido, @cedula, @correo, @contrasenna, @idDepartamento, @idRol, 1);
 
+    -- Capturar el ID del nuevo usuario
+    DECLARE @nuevoIdUsuario INT = SCOPE_IDENTITY();
+
+    -- Registrar auditoría
+    EXEC sp_RegistrarAuditoriaGeneral
+        @tabla = 'Usuario',
+        @accion = 'Insertar',
+        @idRegistro = @nuevoIdUsuario,
+        @idUsuarioSesion = @idUsuarioSesion;
 END;
 GO
+
 
 CREATE OR ALTER PROCEDURE SP_DetallesUsuario(
 @idUsuario INT
@@ -439,68 +511,84 @@ GO
 
 --UPDATE USUARIO
 CREATE OR ALTER PROCEDURE SP_EditarUsuario
-@idUsuario INT,
-@usuario VARCHAR(50),
-@nombre VARCHAR(50),
-@apellido VARCHAR(50),
-@cedula VARCHAR(50),
-@correo VARCHAR(50),
-@idDepartamento	INT,
-@idRol INT
-AS BEGIN
+(
+    @idUsuario INT,
+    @usuario VARCHAR(50),
+    @nombre VARCHAR(50),
+    @apellido VARCHAR(50),
+    @cedula VARCHAR(50),
+    @correo VARCHAR(50),
+    @idDepartamento INT,
+    @idRol INT,
+    @idUsuarioSesion INT -- Usuario que está haciendo la edición
+)
+AS
+BEGIN
+    -- Validar que no se pueda editar a sí mismo
+    IF (@idUsuarioSesion = @idUsuario)
+    BEGIN
+        RAISERROR('No puedes editar tu propio usuario.', 16, 1);
+        RETURN;
+    END
 
-	UPDATE Usuario SET
-	usuario = @usuario,
-	nombre = @nombre,
-	apellido = @apellido,
-	cedula = @cedula,
-	correo = @correo,
-	idDepartamento = @idDepartamento,
-	idRol = @idRol
-	WHERE idUsuario = @idUsuario
+    -- Validar que no exista otra cédula igual en otro usuario
+    IF EXISTS (SELECT 1 FROM Usuario WHERE cedula = @cedula AND idUsuario <> @idUsuario)
+    BEGIN
+        RAISERROR('Ya existe otro usuario con esa cédula.', 16, 1);
+        RETURN;
+    END
 
+    -- Actualizar usuario
+    UPDATE Usuario
+    SET
+        usuario = @usuario,
+        nombre = @nombre,
+        apellido = @apellido,
+        cedula = @cedula,
+        correo = @correo,
+        idDepartamento = @idDepartamento,
+        idRol = @idRol
+    WHERE idUsuario = @idUsuario;
+
+    -- Registrar auditoría
+    EXEC sp_RegistrarAuditoriaGeneral
+        @tabla = 'Usuario',
+        @accion = 'Editar',
+        @idRegistro = @idUsuario,
+        @idUsuarioSesion = @idUsuarioSesion;
 END;
 GO
+
 
 --DELETE USUARIO
-CREATE OR ALTER PROCEDURE SP_EliminarUsuario(
-@idUsuario INT
+CREATE OR ALTER PROCEDURE SP_EliminarUsuario
+(
+    @idUsuario INT,
+    @idUsuarioSesion INT -- Usuario en sesión que realiza la eliminación
 )
-AS BEGIN
+AS
+BEGIN
+    -- Validar que no pueda eliminarse a sí mismo
+    IF (@idUsuarioSesion = @idUsuario)
+    BEGIN
+        RAISERROR('No puedes eliminar tu propio usuario.', 16, 1);
+        RETURN;
+    END
 
-	UPDATE Usuario SET
-	estado = 0
-	WHERE idUsuario = @idUsuario
+    -- Eliminar (eliminación lógica)
+    UPDATE Usuario
+    SET estado = 0
+    WHERE idUsuario = @idUsuario;
 
+    -- Registrar en auditoría
+    EXEC sp_RegistrarAuditoriaGeneral
+        @tabla = 'Usuario',
+        @accion = 'Eliminar',
+        @idRegistro = @idUsuario,
+        @idUsuarioSesion = @idUsuarioSesion;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE SP_ValidarUsuarioCorreo
-@correo varchar(100)
-AS
-BEGIN
-
-	SELECT	idUsuario,
-			nombre + ' ' + apellido as nombreCompleto,
-			correo
-	FROM	dbo.Usuario
-	WHERE	correo = @correo
-	
-END
-GO
-
-CREATE OR ALTER PROCEDURE SP_ActualizarContrasenna
-@idUsuario int,
-@contrasenna varchar(50)
-AS
-BEGIN
-	
-	UPDATE Usuario
-	   SET contrasenna = @contrasenna
-	 WHERE idUsuario = @idUsuario
-
-END
-GO
 
 --Inserts de prueba
 INSERT INTO Departamento (nombreDepartamento) VALUES ('Administración');
@@ -892,3 +980,79 @@ SELECT * FROM Mantenimiento
 EXEC SPP_ConsultarTodosMantenimientosHistorial
 
 
+
+
+CREATE TABLE AuditoriaGeneral (
+    idAuditoria INT PRIMARY KEY IDENTITY,
+    fechaAccion DATETIME NOT NULL,
+    tabla VARCHAR(50) NOT NULL,
+    accion VARCHAR(20) NOT NULL,
+    idRegistro INT NOT NULL,
+    idUsuarioSesion INT NOT NULL, -- FK a Usuario
+    CONSTRAINT FK_AuditoriaGeneral_Usuario FOREIGN KEY (idUsuarioSesion) REFERENCES Usuario(idUsuario)
+);
+
+CREATE OR ALTER PROCEDURE sp_RegistrarAuditoriaGeneral
+    @tabla VARCHAR(50),
+    @accion VARCHAR(20),
+    @idRegistro INT,
+    @idUsuarioSesion INT
+AS
+BEGIN
+    INSERT INTO AuditoriaGeneral (fechaAccion, tabla, accion, idRegistro, idUsuarioSesion)
+    VALUES (GETDATE(), @tabla, @accion, @idRegistro, @idUsuarioSesion)
+END
+
+CREATE OR ALTER PROCEDURE sp_ConsultarAuditoriaGeneral
+    @tabla VARCHAR(50) = NULL,
+    @fechaInicio DATE = NULL,
+    @fechaFin DATE = NULL,
+    @idUsuarioSesion INT = NULL,
+    @accion VARCHAR(20) = NULL
+AS
+BEGIN
+    SELECT 
+        a.idAuditoria,
+        a.fechaAccion,
+        a.tabla,
+        a.accion,
+        a.idRegistro,
+        u.nombre + ' ' + u.apellido AS nombreUsuario 
+    FROM AuditoriaGeneral a
+    INNER JOIN Usuario u ON a.idUsuarioSesion = u.idUsuario
+    WHERE
+        (@tabla IS NULL OR a.tabla = @tabla) AND
+        (@fechaInicio IS NULL OR CAST(a.fechaAccion AS DATE) >= @fechaInicio) AND
+        (@fechaFin IS NULL OR CAST(a.fechaAccion AS DATE) <= @fechaFin) AND
+        (@idUsuarioSesion IS NULL OR a.idUsuarioSesion = @idUsuarioSesion) AND
+        (@accion IS NULL OR a.accion = @accion)
+    ORDER BY a.fechaAccion DESC
+END
+
+
+CREATE OR ALTER PROCEDURE SP_ValidarUsuarioCorreo
+@correo varchar(100)
+AS
+BEGIN
+
+	SELECT	idUsuario,
+			nombre + ' ' + apellido as nombreCompleto,
+			correo
+	FROM	dbo.Usuario
+	WHERE	correo = @correo
+	
+END
+GO
+
+CREATE OR ALTER PROCEDURE SP_ActualizarContrasenna
+@idUsuario int,
+@contrasenna varchar(50)
+AS
+BEGIN
+	
+	UPDATE Usuario
+	   SET contrasenna = @contrasenna
+	 WHERE idUsuario = @idUsuario
+
+END
+GO
