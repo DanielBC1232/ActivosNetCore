@@ -1,25 +1,29 @@
-﻿@model RespuestaModel
-@{
-    ViewData["Title"] = "Error";
+﻿@{
+    Layout = "~/Views/Shared/_LayoutExterno.cshtml";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
 
-@if (Model.Indicador)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.Indicador</code>
-    </p>
-}
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh">
+    <div class="d-flex flex-column justify-content-between">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-10">
+                <div class="card card-default">
+                    <div class="card-header">
+                        <div class="app-brand w-100 d-flex justify-content-center border-bottom-0">
+                            <a class="w-auto pl-0" href="/index.html">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body p-5 text-center">
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+                        <h4 class="text-dark mb-5">Se presentó un problema en el sistema.</h4>
+                        <p>
+                            Ir a la página de Inicio de Sesión<br />
+                            <a class="text-blue" href="@Url.Action("IniciarSesion","Login")">Inicia Sesión</a><br />
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

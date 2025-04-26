@@ -1,0 +1,162 @@
+﻿@model ActivosNetCore.Models.UsuarioModel
+
+@if (TempData["MensajeOk"] != null)
+{
+    <div class="alert alert-success text-center">
+        @TempData["MensajeOk"]
+    </div>
+}
+@if (TempData["MensajeError"] != null)
+{
+    <div class="alert alert-danger text-center">
+        @TempData["MensajeError"]
+    </div>
+}
+
+<div class="content-wrap mt-5 p-3">
+    <div class="main">
+        <div class="container-fluid overflow-hidden">
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="card-header bg-secondary">
+                        <h3 class="text-white">Mi Perfil</h3>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <form asp-action="ActualizarPerfil" asp-controller="Usuarios" method="post">
+                                <div class="row g-5 p-3 mb-4 border-bottom">
+                                    <input type="hidden" asp-for="idUsuario" />
+
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Usuario:</label>
+                                            <input type="text" class="form-control" asp-for="usuario" readonly />
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-6">
+                                                <label class="form-label"><strong>Nombre:</strong></label>
+                                                <input asp-for="nombre" type="text" class="form-control" readonly />
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label"><strong>Apellido:</strong></label>
+                                                <input asp-for="apellido" type="text" class="form-control" readonly />
+                                            </div>
+                                        </div>
+
+                                        
+                                    </div>
+
+                                    <div class="col-md-6 d-flex flex-column">
+                                        <div class="mb-3">
+                                            <label class="form-label">Cédula:</label>
+                                            <input type="text" class="form-control" asp-for="cedula" readonly />
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Correo:</label>
+                                            <input type="email" class="form-control" asp-for="correo" readonly />
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label"><strong>Departamento:</strong></label>
+                                            <input type="text" class="form-control" value="@Model.nombreDepartamento" readonly />
+                                            <input type="hidden" asp-for="idDepartamento" />
+                                        </div>
+
+                                        <div class="mb-3" hidden>
+                                            <label class="form-label"><strong>Rol:</strong></label>
+                                            <input type="text" class="form-control" value="@Model.tipo" readonly />
+                                            <input type="hidden" asp-for="idRol" />
+                                        </div>
+
+                                        
+                                    </div>
+                                </div>
+                            </form>
+
+                            <hr />
+
+                            <div class="d-flex flex-column">
+                                <form asp-controller="Usuarios" asp-action="ActualizarContrasenna" method="post">
+                                    <input type="hidden" name="idUsuario" value="@Model.idUsuario" />
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <label class="form-label">Nueva Contraseña:</label>
+                                            <input type="password" name="contrasenna" class="form-control" required />
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label">Confirmar Contraseña:</label>
+                                            <input type="password" name="contrasennaConfirmar" class="form-control" required />
+                                        </div>
+                                        <div class="col-4 d-flex">
+                                            <div class="mt-auto">
+                                                <button type="submit" class="btn btn-primary text-white">
+                                                    Cambiar Contraseña
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @if (ViewBag.Msj != null)
+                                    {
+                                        <div class="alert alert-warning text-center mt-3" role="alert">
+                                            @ViewBag.Msj
+                                        </div>
+                                    }
+                                </form>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#departamentoFilter, #rolFilter').select2({
+                placeholder: function(){
+                  return $(this).find('option:selected').text();
+                },
+                allowClear: false,
+                width: '100%'
+              });
+              function parseOrZero(val) {
+                return val && val !== "" ? parseInt(val, 10) : 0;
+              }
+              function cargarDepartamentos() {
+                const $sel = $('#departamentoFilter');
+                const pre = parseOrZero($sel.data('selected'));
+
+                // reset
+                $sel.empty()
+                    .append(`<option value="0"${pre===0?' selected':''}>Seleccionar</option>`);
+
+                $.ajax({
+                  url: '@Url.Action("ObtenerListaDepartamento", "Login")',
+                  type: 'GET',
+                  success: function (items) {
+                    items.forEach(function (d) {
+                      const sel = pre === d.idDepartamento ? ' selected' : '';
+                      $sel.append(`<option value="${d.idDepartamento}"${sel}>${d.nombreDepartamento}</option>`);
+                    });
+                    // refresca Select2
+                    $sel.trigger('change');
+                  },
+                  error: function () {
+                    console.error('Error al cargar departamentos');
+                  }
+                });
+              }
+            cargarDepartamentos();
+
+
+    });
+</script>
+
+
+

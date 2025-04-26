@@ -75,31 +75,7 @@
                                     </div>
                                 </div>
                             </form>
-                            <div class="d-flex flex-column">
-                                <form asp-controller="Usuarios" asp-action="ActualizarContrasenna">
-                                    <div class="row">
-                                        <div class="col-4">
-                                            <label class="form-label">Contraseña:</label>
-                                            <input type="password" class="form-control" asp-for="contrasenna" required/>
-                                        </div>
-                                        <div class="col-4">
-                                            <label class="form-label">Confirmar contraseña:</label>
-                                            <input type="password" class="form-control" asp-for="contrasennaConfirmar" required/>
-                                        </div>
-                                        <div class="col-4 d-flex">
-                                            <div class="mt-auto">
-                                                <button type="submit" class="btn btn-primary text-white">Cambiar Contraseña</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    @if (@ViewBag.Msj != null)
-                                    {
-                                        <div class="alert alert-warning text-center" role="alert">
-                                            @ViewBag.Msj
-                                        </div>
-                                    }
-                                </form>
-                            </div>
+                           
                         </div>
                     </div>
                 </div>

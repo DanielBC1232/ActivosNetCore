@@ -142,27 +142,26 @@ namespace ActivosNetCore.Controllers
             return View(response);
         }
 
-        //Editar usuario
         [HttpPost]
         public IActionResult EditarUsuario(UsuarioModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
             var idUsuarioSesion = HttpContext.Session.GetInt32("UserId");
 
             if (idUsuarioSesion == null)
             {
-                TempData["MensajeError"] = "Sesión expirada, por favor vuelve a iniciar sesión.";
+                TempData["MensajeError"] = "Sesión expirada, por favor vuelva a iniciar sesión.";
                 return RedirectToAction("IniciarSesion", "Login");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["MensajeError"] = "Datos incompletos.";
+                return View(model);
             }
 
             using (var api = _httpClient.CreateClient())
             {
                 api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Usuarios/EditarUsuario";
 
                 var datos = new
@@ -182,15 +181,23 @@ namespace ActivosNetCore.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
+                    TempData["MensajeOk"] = "Usuario actualizado correctamente.";
                     return RedirectToAction("ListaUsuarios", "Usuarios");
                 }
                 else
                 {
                     var contenido = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
-                    ViewBag.Msj = contenido?.Mensaje ?? "Error al editar el usuario.";
+                    TempData["MensajeError"] = contenido?.Mensaje ?? "Error al editar el usuario.";
                     return View(model);
                 }
             }
+        }
+
+
+        [HttpGet]
+        public IActionResult ActualizarContrasenna()
+        {
+            return View();
         }
 
         [HttpPost]
@@ -198,7 +205,7 @@ namespace ActivosNetCore.Controllers
         {
             if (model.contrasenna != model.contrasennaConfirmar)
             {
-                ViewBag.Msj = "Las contraseñas deben ser iguales";
+                ViewBag.Msj = "Debe confirmar correctamente su nueva contraseña";
                 return View();
             }
 
@@ -206,13 +213,13 @@ namespace ActivosNetCore.Controllers
             {
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Usuarios/ActualizarContrasenna";
 
-                model.contrasenna = _utilitarios.Encrypt(model.contrasenna!);// encriptar
+                var datos = new
+                {
+                    contrasenna = _utilitarios.Encrypt(model.contrasenna!)
+                };
 
-                var contrasenna = new { contrasenna = model.contrasenna }; //extraer contrasena y crear objeto
-                // El id de usuario se envia en token para el where=
-                Console.WriteLine(contrasenna);
                 api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-                var response = api.PutAsJsonAsync(url, contrasenna).Result;
+                var response = api.PutAsJsonAsync(url, datos).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -220,7 +227,8 @@ namespace ActivosNetCore.Controllers
 
                     if (result != null && result.Indicador)
                     {
-                        return RedirectToAction("ListaUsuarios", "Usuarios");
+                        TempData["MensajeOk"] = "Contraseña actualizada correctamente.";
+                        return RedirectToAction("PerfilUsuario", "Usuarios");
                     }
                     else
                         ViewBag.Msj = result!.Mensaje;
@@ -231,6 +239,8 @@ namespace ActivosNetCore.Controllers
 
             return View();
         }
+
+
 
         [HttpPost]
         public IActionResult EliminarUsuario(UsuarioModel model)
@@ -269,6 +279,40 @@ namespace ActivosNetCore.Controllers
                 }
             }
         }
+
+        [HttpGet]
+        public IActionResult PerfilUsuario()
+        {
+            try
+            {
+                var idUsuarioSesion = HttpContext.Session.GetInt32("UserId");
+                if (idUsuarioSesion == null)
+                {
+                    return RedirectToAction("IniciarSesion", "Login");
+                }
+
+                var response = _utilitarios.ObtenerInfoUsuario(idUsuarioSesion.Value) ?? new UsuarioModel();
+
+                if (response == null)
+                {
+                    TempData["MensajeError"] = "No se encontró información del usuario.";
+                    return RedirectToAction("IniciarSesion", "Login");
+                }
+
+                return View(response);
+            }
+            catch (Exception ex)
+            {
+                TempData["MensajeError"] = "Ocurrió un error inesperado.";
+                Console.WriteLine(ex.Message);
+                return RedirectToAction("IniciarSesion", "Login");
+            }
+        }
+
+       
+
+
+
 
 
     }

@@ -34,10 +34,15 @@
                     <div class="logo text-center mt-3">
                         <i class="ti-user" style="font-size: 48px; color: white;"></i>
                         <div class="mt-2">
-                            <strong>@Context.Session.GetString("Usuario")</strong> <br />
-                            <small>@Context.Session.GetString("Rol")</small>
+                            <strong>@Context.Session.GetString("Usuario")</strong><br />
+                            <small>@Context.Session.GetString("Rol")</small><br />
+
+                            <a asp-controller="Usuarios" asp-action="PerfilUsuario" class="btn btn-primary btn-sm mt-2">
+                                Ver Perfil
+                            </a>
                         </div>
                     </div>
+
 
                     <hr>
                     <div class="logo"><a href="#"><span>Gestor Activos</span></a></div>
