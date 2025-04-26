@@ -42,7 +42,7 @@
 
                                         <div class="mb-3">
                                             <label class="form-label"><strong>Rol</strong></label>
-                                            <select asp-for="idRol" class="form-control" name="idRol">
+                                            <select asp-for="idRol" class="form-control" name="idRol" required>
                                                 <option selected value="">Seleccione...</option>
                                                 <option value="1">Administrador</option>
                                                 <option value="2">Usuario</option>
@@ -54,27 +54,52 @@
                                     <div class="col-md-6 d-flex flex-column">
                                         <div class="mb-3">
                                             <label class="form-label">Cedula:</label>
-                                            <input type="text" class="form-control" asp-for="cedula" name="cedula" />
+                                            <input type="text" class="form-control" asp-for="cedula" name="cedula" required/>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">correo:</label>
-                                            <input type="email" class="form-control" asp-for="correo" name="correo" />
+                                            <input type="email" class="form-control" asp-for="correo" name="correo" required/>
                                         </div>
                                         <div class="mb-3">
                                             <label for="idDepartamento" class="form-label">Departamento:</label>
-                                            <select asp-for="idDepartamento" id="departamentoFilter" class="form-control" name="idDepartamento" data-selected="@Model.idDepartamento">
+                                            <select asp-for="idDepartamento" id="departamentoFilter" class="form-control" name="idDepartamento" data-selected="@Model.idDepartamento" required>
                                                 <option id="departamentoFilter" value="0">Seleccionar...</option>
                                             </select>
                                         </div>
 
                                         <div class="d-grid gap-5 align-self-end mt-3 row">
                                             <div class="col-6">
-                                                <button type="submit" class="btn btn-primary text-white" asp-controller="Usuarios" asp-action="EditarUsuario">Guardar</button>
+                                                <button type="submit" class="btn btn-secondary text-white" asp-controller="Usuarios" asp-action="EditarUsuario">Guardar Cambios</button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </form>
+                            <div class="d-flex flex-column">
+                                <form asp-controller="Usuarios" asp-action="ActualizarContrasenna">
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <label class="form-label">Contraseña:</label>
+                                            <input type="password" class="form-control" asp-for="contrasenna" required/>
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label">Confirmar contraseña:</label>
+                                            <input type="password" class="form-control" asp-for="contrasennaConfirmar" required/>
+                                        </div>
+                                        <div class="col-4 d-flex">
+                                            <div class="mt-auto">
+                                                <button type="submit" class="btn btn-primary text-white">Cambiar Contraseña</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if (@ViewBag.Msj != null)
+                                    {
+                                        <div class="alert alert-warning text-center" role="alert">
+                                            @ViewBag.Msj
+                                        </div>
+                                    }
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
