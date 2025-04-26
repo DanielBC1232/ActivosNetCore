@@ -192,6 +192,7 @@ BEGIN
 END
 GO
 
+EXEC sp_ListarSoportes
 --Activos --CREATE
 CREATE OR ALTER PROCEDURE SP_AgregarActivo(
 @nombreActivo VARCHAR(100),

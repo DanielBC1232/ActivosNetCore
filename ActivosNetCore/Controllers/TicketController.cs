@@ -152,24 +152,38 @@ namespace ActivosNetCore.Controllers
             }
         }
 
-
         [HttpPost]
-        public IActionResult EliminarActivo(TicketModel model)
+        public IActionResult EliminarTicket(TicketModel model)
         {
-            using (var api = _httpClient.CreateClient())
+            try
             {
-                var url = _configuration.GetSection("Variables:urlApi").Value + "Ticket/EliminarTicket";
-                var result = api.PutAsJsonAsync(url, model).Result;
-                if (result.IsSuccessStatusCode)
+                using (var api = _httpClient.CreateClient())
                 {
-                    TempData["MensajeOk"] = "Ticket eliminado correctamente.";
-                    return RedirectToAction("ListaTicket", "Ticket");
+                    // Solo necesitamos el ID para eliminar
+                    var TicketParaEliminar = new TicketModel
+                    {
+                        IdTicket = model.IdTicket
+                    };
+
+                    var url = _configuration.GetSection("Variables:urlApi").Value + "Ticket/EliminarTicket";
+                    var result = api.DeleteAsync(url + "/" + model.IdTicket).Result;
+
+                    if (result.IsSuccessStatusCode)
+                    {
+                        TempData["MensajeOk"] = "Ticket eliminado correctamente";
+                        return RedirectToAction("ListaTicket");
+                    }
+                    else
+                    {
+                        TempData["MensajeError"] = "No se pudo eliminar el Ticket";
+                        return RedirectToAction("DetallesTicket", new { idTicket = model.IdTicket });
+                    }
                 }
-                else
-                {
-                    TempData["MensajeError"] = "No se pudo eliminar el ticket.";
-                    return RedirectToAction("ListaTicket", "Ticket");
-                }
+            }
+            catch (Exception ex)
+            {
+                TempData["MensajeError"] = "Error al eliminar: " + ex.Message;
+                return RedirectToAction("DetallesTicket", new { idTicket = model.IdTicket });
             }
         }
 

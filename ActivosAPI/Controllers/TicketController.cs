@@ -135,30 +135,47 @@ namespace ActivosAPI.Controllers
         }
 
 
-        [HttpPut]
-        [Route("EliminarTicket")]
-        public IActionResult EliminarTicket(TicketModel model)
+        [HttpDelete("EliminarTicket/{idTicket}")]
+        public IActionResult EliminarTicket(int idTicket)
         {
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            try
             {
-                var result = context.Execute("sp_EliminarTicket",
-                    new { model.IdTicket });
-
-                var respuesta = new RespuestaModel();
-
-                if (result > 0)
+                using (var connection = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
                 {
-                    respuesta.Indicador = true;
-                    respuesta.Mensaje = "El ticket se ha desactivado correctamente";
-                    return Ok(respuesta);
-                }
-                else
-                {
-                    respuesta.Indicador = false;
-                    respuesta.Mensaje = "El ticket no ha desactivado";
-                    return StatusCode(500, respuesta);
-                }
+                    connection.Open();
 
+                    var parametros = new DynamicParameters();
+                    parametros.Add("@idTicket", idTicket);
+
+                    var result = connection.Execute(
+                        "sp_EliminarTicket",
+                        parametros,
+                        commandType: CommandType.StoredProcedure
+                    );
+                    var respuesta = new RespuestaModel();
+
+                    if (result > 0)
+                    {
+                        respuesta.Indicador = true;
+                        respuesta.Mensaje = "El Ticket se ha eliminado correctamente";
+                        return Ok(respuesta);
+                    }
+                    else
+                    {
+                        respuesta.Indicador = false;
+                        respuesta.Mensaje = "No se pudo eliminar el Ticket";
+                        return StatusCode(500, respuesta);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var respuesta = new RespuestaModel
+                {
+                    Indicador = false,
+                    Mensaje = "Error al eliminar: " + ex.Message
+                };
+                return StatusCode(500, respuesta);
             }
         }
 

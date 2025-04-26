@@ -5,15 +5,15 @@
 }
 @if (TempData["MensajeOk"] != null)
 {
-        <div class="alert alert-success text-center">
+    <div class="alert alert-success text-center">
         @TempData["MensajeOk"]
-        </div>
+    </div>
 }
 @if (TempData["MensajeError"] != null)
 {
-        <div class="alert alert-danger text-center">
+    <div class="alert alert-danger text-center">
         @TempData["MensajeError"]
-        </div>
+    </div>
 }
 <div class="content-wrap mt-5 p-3">
     <div class="main">
@@ -65,15 +65,19 @@
                                         </div>
                                         <div class="d-grid gap-5 align-self-end mt-3 row">
                                             <div class="col-4">
-                                                <form asp-action="EliminarActivo" asp-controller="Ticket">
-                                                    <input type="hidden" asp-for="IdTicket">
-                                                    <button type="submit" class="btn btn-dark" id="btnEliminar">Eliminar</button>
-                                                </form>
-                                            </div>
-                                            <div class="col-4">
                                                 <a type="button" class="btn btn-secondary text-white" href="@Url.Action("EditarTicket","Ticket", new { idTicket = Model.IdTicket})">Editar</a>
                                             </div>
                             </form>
+                            <div class="col-4">
+                                <form asp-action="EliminarTicket"
+                                      asp-controller="Ticket"
+                                      method="post"
+                                      onsubmit="return confirm('¿Seguro que deseas eliminar este ticket?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="idTicket" value="@Model.IdTicket" />
+                                    <button type="submit" class="btn btn-dark">Eliminar</button>
+                                </form>
+                            </div>
                             <div class="col-4">
                                 <a asp-action="ListaTicket" class="btn btn-secondary">Volver</a>
                             </div>

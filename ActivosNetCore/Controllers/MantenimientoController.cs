@@ -273,14 +273,14 @@ namespace ActivosNetCore.Controllers
                     else
                     {
                         TempData["MensajeError"] = "No se pudo eliminar el mantenimiento";
-                        return RedirectToAction("DetalleMantenimiento", new { idMantenimiento = model.IdMantenimiento });
+                        return RedirectToAction("DetallesMantenimiento", new { idMantenimiento = model.IdMantenimiento });
                     }
                 }
             }
             catch (Exception ex)
             {
                 TempData["MensajeError"] = "Error al eliminar: " + ex.Message;
-                return RedirectToAction("DetalleMantenimiento", new { idMantenimiento = model.IdMantenimiento });
+                return RedirectToAction("DetallesMantenimiento", new { idMantenimiento = model.IdMantenimiento });
             }
         }
 

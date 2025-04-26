@@ -75,43 +75,43 @@
 
                                     <div class="d-grid gap-5 align-self-end mt-3 row">
                                         <div class="col-4">
-                                        <form asp-action="EliminarMantenimiento"
-                                              asp-controller="Mantenimiento"
-                                              method="post"
-                                              class="me-2">
-                                            <input type="hidden" name="IdMantenimiento" value="@Model.IdMantenimiento" />
-                                            <button type="submit" class="btn btn-dark" id="btnEliminar">
-                                                Eliminar
-                                            </button>
-                                        </form>
+                                            <a asp-action="EditarMantenimiento"
+                                               asp-controller="Mantenimiento"
+                                               asp-route-idMantenimiento="@Model.IdMantenimiento"
+                                               class="btn btn-secondary mr-1">
+                                                Editar
+                                            </a>
                                         </div>
                                         <div class="col-4">
-                                        <a asp-action="EditarMantenimiento"
-                                           asp-controller="Mantenimiento"
-                                           asp-route-idMantenimiento="@Model.IdMantenimiento"
-                                           class="btn btn-secondary mr-1">
-                                            Editar
-                                        </a>
-                                            </div>
-                                            <div class="col-4">
-                                        <a asp-action="ListaMantenimiento"
-                                           asp-controller="Mantenimiento"
-                                           class="btn btn-secondary">
-                                            Volver
-                                        </a>
-                                                </div>
+                                            <form asp-action="EliminarMantenimiento"
+                                                  asp-controller="Mantenimiento"
+                                                  method="post"
+                                                  class="me-2">
+                                                <input type="hidden" name="IdMantenimiento" value="@Model.IdMantenimiento" />
+                                                <button type="submit" class="btn btn-dark" id="btnEliminar">
+                                                    Eliminar
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <div class="col-4">
+                                            <a asp-action="ListaMantenimiento"
+                                               asp-controller="Mantenimiento"
+                                               class="btn btn-secondary">
+                                                Volver
+                                            </a>
+                                        </div>
                                     </div>
 
-                                    </div>
-
-                                    </div>
                                 </div>
+
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
     </div>
 
 

@@ -75,10 +75,15 @@
                                     <!-- Botones de acción -->
                                     <div class="d-grid gap-5 align-self-end mt-3 row">
                                         <div class="col-5">
-                                            <form asp-action="EliminarMantenimiento" asp-controller="Mantenimiento" method="post">
-                                                <input type="hidden" asp-for="IdMantenimiento" />
-                                                <button type="submit" class="btn btn-dark" id="btnEliminar">Eliminar</button>
-                                            </form>
+                                        <form asp-action="EliminarMantenimiento"
+                                              asp-controller="Mantenimiento"
+                                              method="post"
+                                              class="me-2">
+                                            <input type="hidden" name="IdMantenimiento" value="@Model.IdMantenimiento" />
+                                            <button type="submit" class="btn btn-dark" id="btnEliminar">
+                                                Eliminar
+                                            </button>
+                                        </form>
                                         </div>
                                         <div class="col-5">
                                             <a asp-action="ListaMantenimiento"
