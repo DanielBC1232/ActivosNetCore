@@ -27,5 +27,8 @@ namespace ActivosNetCore.Models
         public int? idResponsable { get; set; }
         public string? nombreResponsable { get; set; }
 
+        public int? IdUsuarioSesion { get; set; }
+
+
     }
 }

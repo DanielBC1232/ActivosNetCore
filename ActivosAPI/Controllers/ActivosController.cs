@@ -102,80 +102,71 @@ namespace ActivosAPI.Controllers
 
         [HttpPost]
         [Route("AgregarActivo")]
-        public IActionResult AgregarActivo(ActivosModel model)
+        public IActionResult AgregarActivo([FromBody] ActivosModel model)
         {
-            if (!_utilitarios.ValidarTecnicoFromToken(User.Claims))
+            try
             {
-                return Unauthorized(new { message = "Acceso no autorizado" });
+                using var context = new SqlConnection(_configuration.GetConnectionString("BDConnection"));
+
+                var result = context.Execute("SP_AgregarActivo", new
+                {
+                    model.nombreActivo,
+                    model.placa,
+                    model.serie,
+                    model.descripcion,
+                    model.idDepartamento,
+                    model.idUsuario,
+                    model.IdUsuarioSesion
+                }, commandType: CommandType.StoredProcedure);
+
+                return Ok(new { Indicador = true, Mensaje = "Activo creado correctamente" });
             }
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            catch (SqlException ex)
             {
-                var result = context.Execute("SP_AgregarActivo",
-                    new { model.nombreActivo, model.placa, model.serie, model.descripcion, model.idDepartamento, model.idUsuario });
-
-                var respuesta = new RespuestaModel();
-
-                if (result > 0)
-                {
-                    respuesta.Indicador = true;
-                    respuesta.Mensaje = "El activo se ha registrado correctamente";
-                }
-                else
-                {
-                    respuesta.Indicador = false;
-                    respuesta.Mensaje = "El activo no ha registrado correctamente";
-                }
-
-                return Ok(respuesta);
+                return BadRequest(new { Indicador = false, Mensaje = ex.Message });
             }
         }
 
         [HttpPut]
         [Route("EditarActivo")]
-        public IActionResult EditarActivo(ActivosModel model)
+        public IActionResult EditarActivo([FromBody] ActivosModel model)
         {
-            if (!_utilitarios.ValidarTecnicoFromToken(User.Claims))
+            try
             {
-                return Unauthorized(new { message = "Acceso no autorizado" });
+                using var context = new SqlConnection(_configuration.GetConnectionString("BDConnection"));
+
+                var result = context.Execute("SP_EditarActivo", new { model.idActivo, model.nombreActivo, model.placa, model.serie, model.descripcion, model.idDepartamento, model.idUsuario, model.IdUsuarioSesion });
+
+
+                return Ok(new { Indicador = true, Mensaje = "Activo editado correctamente" });
             }
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            catch (SqlException ex)
             {
-                var result = context.Execute("SP_EditarActivo",
-                    new { model.idActivo, model.nombreActivo, model.placa, model.serie, model.descripcion, model.idDepartamento, model.idUsuario });
-
-                var respuesta = new RespuestaModel();
-
-                if (result > 0)
-                {
-                    respuesta.Indicador = true;
-                    respuesta.Mensaje = "El activo se ha actualizado correctamente";
-                    return Ok(respuesta);
-                }
-                else
-                {
-                    respuesta.Indicador = false;
-                    respuesta.Mensaje = "El activo no ha actualizado";
-                    return StatusCode(500, respuesta);
-
-                }
-
+                return BadRequest(new { Indicador = false, Mensaje = ex.Message });
             }
         }
 
         [HttpPut]
         [Route("EliminarActivo")]
-        public IActionResult EliminarActivo(ActivosModel model)
+       
+        public IActionResult EliminarActivo([FromBody] ActivosModel model)
         {
             if (!_utilitarios.ValidarTecnicoFromToken(User.Claims))
             {
                 return Unauthorized(new { message = "Acceso no autorizado" });
             }
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
-            {
-                var result = context.Execute("SP_EliminarActivo",
-                    new { model.idActivo });
 
-                var respuesta = new RespuestaModel();
+            var respuesta = new RespuestaModel();
+
+            try
+            {
+                using var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value);
+
+                var result = context.Execute("SP_EliminarActivo", new
+                {
+                    model.idActivo,
+                    model.IdUsuarioSesion
+                }, commandType: CommandType.StoredProcedure);
 
                 if (result > 0)
                 {
@@ -186,9 +177,15 @@ namespace ActivosAPI.Controllers
                 else
                 {
                     respuesta.Indicador = false;
-                    respuesta.Mensaje = "El activo no ha desactivado";
+                    respuesta.Mensaje = "El activo no se pudo desactivar";
                     return StatusCode(500, respuesta);
                 }
+            }
+            catch (SqlException ex)
+            {
+                respuesta.Indicador = false;
+                respuesta.Mensaje = ex.Message;
+                return BadRequest(respuesta);
             }
         }
     }

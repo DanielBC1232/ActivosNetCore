@@ -30,5 +30,8 @@ namespace ActivosAPI.Models
         //Token
         public string? Token { get; set; }
 
+        public int? IdUsuarioSesion { get; set; }
+
+
     }
 }

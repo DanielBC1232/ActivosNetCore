@@ -33,8 +33,15 @@ namespace ActivosNetCore.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.Msj = "Datos incompletos";
-                Console.WriteLine(model.nombreCompleto);
                 return View();
+            }
+
+            var idUsuarioSesion = HttpContext.Session.GetInt32("UserId");
+
+            if (idUsuarioSesion == null)
+            {
+                TempData["MensajeError"] = "Sesión expirada, por favor vuelva a iniciar sesión.";
+                return RedirectToAction("IniciarSesion", "Login");
             }
 
             var datos = new
@@ -46,7 +53,8 @@ namespace ActivosNetCore.Controllers
                 correo = model.correo,
                 contrasenna = _utilitarios.Encrypt(model.contrasenna!),
                 idDepartamento = model.idDepartamento,
-                idRol = model.idRol
+                idRol = model.idRol,
+                idUsuarioSesion = idUsuarioSesion.Value 
             };
 
             using (var api = _httpClient.CreateClient())
@@ -56,11 +64,13 @@ namespace ActivosNetCore.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    //retornar a listado usuarios
                     return RedirectToAction("ListaUsuarios", "Usuarios");
                 }
                 else
-                    ViewBag.Msj = "No se pudo completar su petición";
+                {
+                    var contenido = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                    ViewBag.Msj = contenido?.Mensaje ?? "No se pudo completar su petición.";
+                }
             }
 
             return View();
@@ -136,39 +146,86 @@ namespace ActivosNetCore.Controllers
         [HttpPost]
         public IActionResult EditarUsuario(UsuarioModel model)
         {
-            if (!ModelState.IsValid)//Evitar enviar campos vacios
+            if (!ModelState.IsValid)
             {
                 return View(model);
             }
+
+            var idUsuarioSesion = HttpContext.Session.GetInt32("UserId");
+
+            if (idUsuarioSesion == null)
+            {
+                TempData["MensajeError"] = "Sesión expirada, por favor vuelve a iniciar sesión.";
+                return RedirectToAction("IniciarSesion", "Login");
+            }
+
             using (var api = _httpClient.CreateClient())
             {
                 api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Usuarios/EditarUsuario";
-                var result = api.PutAsJsonAsync(url, model).Result;
-                if (result.IsSuccessStatusCode)
+
+                var datos = new
+                {
+                    model.idUsuario,
+                    model.usuario,
+                    model.nombre,
+                    model.apellido,
+                    model.cedula,
+                    model.correo,
+                    model.idDepartamento,
+                    model.idRol,
+                    idUsuarioSesion = idUsuarioSesion.Value
+                };
+
+                var response = api.PutAsJsonAsync(url, datos).Result;
+
+                if (response.IsSuccessStatusCode)
                 {
                     return RedirectToAction("ListaUsuarios", "Usuarios");
                 }
-
-                return View();
+                else
+                {
+                    var contenido = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                    ViewBag.Msj = contenido?.Mensaje ?? "Error al editar el usuario.";
+                    return View(model);
+                }
             }
         }
 
         [HttpPost]
         public IActionResult EliminarUsuario(UsuarioModel model)
         {
+            var idUsuarioSesion = HttpContext.Session.GetInt32("UserId");
+
+            if (idUsuarioSesion == null)
+            {
+                TempData["MensajeError"] = "Sesión expirada, por favor vuelva a iniciar sesión.";
+                return RedirectToAction("IniciarSesion", "Login");
+            }
+
             using (var api = _httpClient.CreateClient())
             {
                 api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-                var param = new { model.idUsuario };
-                var url = _configuration.GetSection("Variables:urlApi").Value + "Usuarios/EliminarUsuario";
-                var result = api.PutAsJsonAsync(url,param).Result;
-                if (result.IsSuccessStatusCode)
+
+                var param = new
                 {
+                    model.idUsuario,
+                    idUsuarioSesion = idUsuarioSesion.Value 
+                };
+
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Usuarios/EliminarUsuario";
+                var response = api.PutAsJsonAsync(url, param).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["MensajeOk"] = "Usuario eliminado correctamente.";
                     return RedirectToAction("ListaUsuarios", "Usuarios");
                 }
                 else
                 {
+                    var contenido = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                    TempData["MensajeError"] = contenido?.Mensaje ?? "Error al eliminar el usuario.";
                     return RedirectToAction("ListaUsuarios", "Usuarios");
                 }
             }
