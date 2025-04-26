@@ -44,6 +44,17 @@ namespace ActivosNetCore.Controllers
         [HttpPost]
         public IActionResult AgregarActivo(ActivosModel model)
         {
+            if (!ModelState.IsValid
+    || string.IsNullOrWhiteSpace(model.nombreActivo)
+    || model.placa == 0
+    || string.IsNullOrWhiteSpace(model.serie)
+    || string.IsNullOrWhiteSpace(model.descripcion)
+    || model.idDepartamento == 0
+    || model.idUsuario == 0)
+            {
+                TempData["MensajeError"] = "Por favor complete todos los campos obligatorios.";
+                return View(model);
+            }
             var idUsuarioSesion = HttpContext.Session.GetInt32("UserId");
 
             if (idUsuarioSesion == null)
@@ -119,6 +130,18 @@ namespace ActivosNetCore.Controllers
         [HttpPost]
         public IActionResult EditarActivo(ActivosModel model)
         {
+
+            if (!ModelState.IsValid
+    || string.IsNullOrWhiteSpace(model.nombreActivo)
+    || model.placa == 0
+    || string.IsNullOrWhiteSpace(model.serie)
+    || string.IsNullOrWhiteSpace(model.descripcion)
+    || model.idDepartamento == 0
+    || model.idUsuario == 0)
+            {
+                TempData["MensajeError"] = "Por favor complete todos los campos obligatorios.";
+                return View(model);
+            }
             var idUsuarioSesion = HttpContext.Session.GetInt32("UserId");
 
             if (idUsuarioSesion == null)
