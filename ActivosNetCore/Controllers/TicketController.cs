@@ -91,7 +91,37 @@ namespace ActivosNetCore.Controllers
             return View(ticket);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> HistorialTicket(TicketModel? model)
+        {
+            using (var api = _httpClient.CreateClient())
+            {
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Ticket/HistorialTicket";
+                var result = await api.GetAsync(url);
 
+                if (result.IsSuccessStatusCode)
+                {
+                    var Tickets = await result.Content.ReadFromJsonAsync<List<TicketModel>>();
+                    return View(Tickets);
+                }
+            }
+            var Ticket = new List<TicketModel>();
+            return View(Ticket);
+        }
+
+        [HttpGet]
+        public IActionResult DetallesTicketHistorial(int idTicket)
+        {
+            // 1) Intentamos obtener el Ticket del historial
+            var Ticket = _utilitarios.ObtenerInfoTicket(idTicket);
+            if (Ticket == null)
+            {
+                TempData["MensajeError"] = "Ticket no encontrado en historial";
+                return RedirectToAction("HistorialTicket");
+            }
+
+            return View(Ticket);
+        }
 
         [HttpGet]
         public async Task<IActionResult> EditarTicket(int idTicket)

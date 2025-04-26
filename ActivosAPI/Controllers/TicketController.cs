@@ -243,5 +243,26 @@ namespace ActivosAPI.Controllers
         }
 
 
+        [HttpGet]
+        [Route("HistorialTicket")]
+        public IActionResult HistorialTicket()
+        {
+
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                var result = context.Query<TicketModel>("SPP_ConsultarTodosTicketsHistorial",
+               commandType: CommandType.StoredProcedure);
+
+                if (result.Any())
+                {
+                    return Ok(result);
+                }
+                else
+                {
+                    return NotFound(new { Indicador = false, Mensaje = "No hay datos disponibles" });
+                }
+            }
+        }
+
     }
 }
