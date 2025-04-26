@@ -20,5 +20,8 @@
 
         public string? nombreResponsable { get; set; }
 
+        public int? IdUsuarioSesion { get; set; }
+
+
     }
 }

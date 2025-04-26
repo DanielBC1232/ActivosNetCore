@@ -41,29 +41,51 @@ namespace ActivosNetCore.Controllers
             return View();
         }
 
-        //Agregar nuevo activo
         [HttpPost]
         public IActionResult AgregarActivo(ActivosModel model)
         {
-            if (!ModelState.IsValid)//Evitar enviar campos vacios
+            var idUsuarioSesion = HttpContext.Session.GetInt32("UserId");
+
+            if (idUsuarioSesion == null)
             {
-                return View();
+                TempData["MensajeError"] = "Sesión expirada, por favor vuelva a iniciar sesión.";
+                return RedirectToAction("IniciarSesion", "Login");
             }
+
             using (var api = _httpClient.CreateClient())
             {
                 api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
+
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/AgregarActivo";
-                var result = api.PostAsJsonAsync(url, model).Result;
+
+                var datos = new
+                {
+                    
+                    model.nombreActivo,
+                    model.placa,
+                    model.serie,
+                    model.descripcion,
+                    model.idDepartamento,
+                    model.idUsuario,
+                    idUsuarioSesion = idUsuarioSesion.Value
+                };
+
+                var result = api.PostAsJsonAsync(url, datos).Result;
 
                 if (result.IsSuccessStatusCode)
                 {
-                    TempData["MensajeOk"] = "Activo guardado";
-                    return RedirectToAction("ListaActivos", "Activos");
+                    TempData["MensajeOk"] = "Activo guardado correctamente";
+                    return RedirectToAction("ListaActivos");
                 }
-                TempData["MensajeError"] = "No se pudo completar su peticion";
-                return View();
+                else
+                {
+                    var contenido = result.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                    TempData["MensajeError"] = contenido?.Mensaje ?? "Error al guardar el activo.";
+                    return RedirectToAction("AgregarActivo");
+                }
             }
         }
+
 
         [HttpGet]
         public IActionResult DetallesActivo(int idActivo)
@@ -97,44 +119,91 @@ namespace ActivosNetCore.Controllers
         [HttpPost]
         public IActionResult EditarActivo(ActivosModel model)
         {
+            var idUsuarioSesion = HttpContext.Session.GetInt32("UserId");
+
+            if (idUsuarioSesion == null)
+            {
+                TempData["MensajeError"] = "Sesión expirada, por favor vuelve a iniciar sesión.";
+                return RedirectToAction("IniciarSesion", "Login");
+            }
+
             using (var api = _httpClient.CreateClient())
             {
                 api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
-                var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/EditarActivo";
-                var result = api.PutAsJsonAsync(url, model).Result;
-                if (result.IsSuccessStatusCode)
-                { 
-                    TempData["MensajeOk"] = "Activo Editado";
-                    return RedirectToAction("ListaActivos", "Activos");
-                } else {
 
-                    TempData["MensajeError"] = "Error al cargar los detalles";
-                    return RedirectToAction("ListaActivos", "Activos");
+                var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/EditarActivo";
+
+                var datos = new
+                {
+                    model.idActivo,
+                    model.nombreActivo,
+                    model.placa,
+                    model.serie,
+                    model.descripcion,
+                    model.idDepartamento,
+                    model.idUsuario,
+                    idUsuarioSesion = idUsuarioSesion.Value
+                };
+
+                var result = api.PutAsJsonAsync(url, datos).Result;
+
+                if (result.IsSuccessStatusCode)
+                {
+                    TempData["MensajeOk"] = "Activo editado correctamente.";
+                    return RedirectToAction("ListaActivos");
+                }
+                else
+                {
+                    var contenido = result.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                    TempData["MensajeError"] = contenido?.Mensaje ?? "Error al editar el activo.";
+                    return RedirectToAction("ListaActivos");
                 }
             }
         }
 
+
+
+        [HttpPost]
         [HttpPost]
         public IActionResult EliminarActivo(ActivosModel model)
         {
+            var idUsuarioSesion = HttpContext.Session.GetInt32("UserId");
+
+            if (idUsuarioSesion == null)
+            {
+                TempData["MensajeError"] = "Sesión expirada, por favor vuelva a iniciar sesión.";
+                return RedirectToAction("IniciarSesion", "Login");
+            }
+
             using (var api = _httpClient.CreateClient())
             {
                 api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("Token"));
 
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/EliminarActivo";
-                var result = api.PutAsJsonAsync(url, model).Result;
-                if (result.IsSuccessStatusCode)
+
+                var datos = new
                 {
-                    TempData["MensajeOk"] = "Activo Eliminado correctamente";
+                    model.idActivo,
+                    idUsuarioSesion = idUsuarioSesion.Value
+                };
+
+                var response = api.PutAsJsonAsync(url, datos).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["MensajeOk"] = "Activo eliminado correctamente.";
                     return RedirectToAction("ListaActivos", "Activos");
                 }
                 else
                 {
-                    TempData["MensajeError"] = "Error al eliminar el activo";
+                    var contenido = response.Content.ReadFromJsonAsync<RespuestaModel>().Result;
+                    TempData["MensajeError"] = contenido?.Mensaje ?? "Error al eliminar el activo.";
                     return RedirectToAction("ListaActivos", "Activos");
                 }
             }
         }
+
+
 
     }
 }

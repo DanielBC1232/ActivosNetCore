@@ -30,8 +30,11 @@ namespace ActivosAPI.Controllers
         [Route("RegistrarCuenta")]
         public IActionResult RegistrarCuenta(UsuarioModel model)
         {
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            var respuesta = new RespuestaModel();
+            try
             {
+                using var context = new SqlConnection(_configuration.GetConnectionString("BDConnection"));
+
                 var result = context.Execute("SP_RegistrarCuenta", new
                 {
                     model.usuario,
@@ -41,23 +44,28 @@ namespace ActivosAPI.Controllers
                     model.correo,
                     model.contrasenna,
                     model.idDepartamento,
-                    model.idRol
+                    model.idRol,
+                    idUsuarioSesion = model.IdUsuarioSesion 
                 }, commandType: CommandType.StoredProcedure);
-
-                var respuesta = new RespuestaModel();
 
                 if (result > 0)
                 {
                     respuesta.Indicador = true;
                     respuesta.Mensaje = "Su información se ha registrado correctamente";
+                    return Ok(respuesta);
                 }
                 else
                 {
                     respuesta.Indicador = false;
-                    respuesta.Mensaje = "Su información no ha registrado correctamente";
+                    respuesta.Mensaje = "Su información no se ha registrado correctamente";
+                    return StatusCode(500, respuesta);
                 }
-
-                return Ok(respuesta);
+            }
+            catch (SqlException ex)
+            {
+                respuesta.Indicador = false;
+                respuesta.Mensaje = ex.Message;
+                return BadRequest(respuesta);
             }
         }
 
@@ -120,43 +128,61 @@ namespace ActivosAPI.Controllers
 
         [HttpPut]
         [Route("EditarUsuario")]
-        public IActionResult EditarActivo(UsuarioModel model)
+        public IActionResult EditarUsuario(UsuarioModel model)
         {
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            var respuesta = new RespuestaModel();
+            try
             {
-                var result = context.Execute("SP_EditarUsuario",
-                    new { model.idUsuario, model.usuario, model.nombre, model.apellido, model.cedula, model.correo, model.idDepartamento, model.idRol });
+                using var context = new SqlConnection(_configuration.GetConnectionString("BDConnection"));
 
-                var respuesta = new RespuestaModel();
+                var result = context.Execute("SP_EditarUsuario", new
+                {
+                    model.idUsuario,
+                    model.usuario,
+                    model.nombre,
+                    model.apellido,
+                    model.cedula,
+                    model.correo,
+                    model.idDepartamento,
+                    model.idRol,
+                    idUsuarioSesion = model.IdUsuarioSesion
+                }, commandType: CommandType.StoredProcedure);
 
                 if (result > 0)
                 {
                     respuesta.Indicador = true;
-                    respuesta.Mensaje = "El Usuario se ha actualizado correctamente";
+                    respuesta.Mensaje = "El usuario se ha actualizado correctamente";
                     return Ok(respuesta);
                 }
                 else
                 {
                     respuesta.Indicador = false;
-                    respuesta.Mensaje = "El usuario no ha actualizado";
+                    respuesta.Mensaje = "El usuario no se ha actualizado";
                     return StatusCode(500, respuesta);
-
                 }
-
+            }
+            catch (SqlException ex)
+            {
+                respuesta.Indicador = false;
+                respuesta.Mensaje = ex.Message;
+                return BadRequest(respuesta);
             }
         }
 
         [HttpPut]
         [Route("EliminarUsuario")]
-        public IActionResult EliminarActivo(UsuarioModel model)
+        public IActionResult EliminarUsuario(UsuarioModel model)
         {
-            var idUsuario = model.idUsuario;
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            var respuesta = new RespuestaModel();
+            try
             {
-                var result = context.Execute("SP_EliminarUsuario",
-                    new { idUsuario });
+                using var context = new SqlConnection(_configuration.GetConnectionString("BDConnection"));
 
-                var respuesta = new RespuestaModel();
+                var result = context.Execute("SP_EliminarUsuario", new
+                {
+                    model.idUsuario,
+                    idUsuarioSesion = model.IdUsuarioSesion
+                }, commandType: CommandType.StoredProcedure);
 
                 if (result > 0)
                 {
@@ -170,6 +196,12 @@ namespace ActivosAPI.Controllers
                     respuesta.Mensaje = "El usuario no se ha desactivado";
                     return StatusCode(500, respuesta);
                 }
+            }
+            catch (SqlException ex)
+            {
+                respuesta.Indicador = false;
+                respuesta.Mensaje = ex.Message;
+                return BadRequest(respuesta);
             }
         }
 
