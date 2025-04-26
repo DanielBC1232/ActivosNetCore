@@ -184,7 +184,7 @@ AS
 BEGIN
     SELECT 
       u.idUsuario,
-        u.nombre + ' ' + u.apellido AS nombreUsuario
+        u.nombre + ' ' + u.apellido AS nombreCompleto
     FROM Usuario u
     INNER JOIN Rol r ON u.idRol = r.idRol
     WHERE r.tipo = 'Soporte'
@@ -272,8 +272,10 @@ END;
 GO
 
 --READ (Listado)
-CREATE OR ALTER PROCEDURE SP_ListadoActivoDrop
+
+CREATE OR ALTER PROCEDURE SP_ListadoActivoDrop(
     @idUsuario INT
+)
 AS
 BEGIN
     SET NOCOUNT ON;
