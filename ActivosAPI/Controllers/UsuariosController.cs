@@ -11,6 +11,7 @@ using System.Text;
 using System.Data;
 using ActivosAPI.Dependencias;
 using System.Reflection;
+using System.Net.Mail;
 
 namespace ActivosAPI.Controllers
 {
@@ -168,7 +169,6 @@ namespace ActivosAPI.Controllers
                 return BadRequest(respuesta);
             }
         }
-
         [HttpPut]
         [Route("ActualizarContrasenna")]
         public IActionResult ActualizarContrasenna(UsuarioModel model)
@@ -184,6 +184,16 @@ namespace ActivosAPI.Controllers
 
                 if (result > 0)
                 {
+                    // ✅ Contraseña actualizada, ahora enviar correo
+                    var usuario = context.QueryFirstOrDefault<UsuarioModel>(
+                        "SP_DetallesUsuario", new { idUsuario }, commandType: CommandType.StoredProcedure);
+
+                    if (usuario != null && !string.IsNullOrEmpty(usuario.correo))
+                    {
+                        var contenido = $"Hola {usuario.nombre} {usuario.apellido},<br><br>Su contraseña fue cambiada exitosamente en el sistema Gestor de Activos.<br><br>Si usted no realizó este cambio, contacte al administrador.";
+                        EnviarCorreo(usuario.correo, "Cambio de Contraseña - Gestor de Activos", contenido);
+                    }
+
                     respuesta.Indicador = true;
                     respuesta.Mensaje = "Información actualizada";
                 }
@@ -196,6 +206,7 @@ namespace ActivosAPI.Controllers
                 return Ok(respuesta);
             }
         }
+
 
         [HttpPut]
         [Route("EliminarUsuario")]
@@ -234,6 +245,28 @@ namespace ActivosAPI.Controllers
         }
 
 
+        private void EnviarCorreo(string destino, string asunto, string contenido)
+        {
+            string cuenta = _configuration.GetSection("Variables:CorreoEmail").Value!;
+            string contrasenna = _configuration.GetSection("Variables:ClaveEmail").Value!;
+
+            MailMessage message = new MailMessage();
+            message.From = new MailAddress(cuenta);
+            message.To.Add(new MailAddress(destino));
+            message.Subject = asunto;
+            message.Body = contenido;
+            message.Priority = MailPriority.Normal;
+            message.IsBodyHtml = true;
+
+            SmtpClient client = new SmtpClient("smtp.gmail.com", 587);
+            client.Credentials = new System.Net.NetworkCredential(cuenta, contrasenna);
+            client.EnableSsl = true;
+
+            if (!string.IsNullOrEmpty(contrasenna))
+            {
+                client.Send(message);
+            }
+        }
 
     }
 }

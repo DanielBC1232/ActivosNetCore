@@ -1181,3 +1181,29 @@ BEGIN
 
 END
 GO
+
+
+CREATE TABLE Error (
+    idError INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+    IdUsuario INT NOT NULL,
+    FechaHora DATETIME NOT NULL,
+    Mensaje VARCHAR(MAX) NOT NULL,
+    Origen VARCHAR(250) NOT NULL,
+    FOREIGN KEY (IdUsuario) REFERENCES Usuario(idUsuario)
+);
+GO
+
+
+
+CREATE OR ALTER PROCEDURE RegistrarError
+	@IdUsuario int,
+	@Mensaje varchar(MAX),
+	@Origen varchar(250)
+AS
+BEGIN
+	
+	INSERT INTO dbo.Error(IdUsuario, FechaHora, Mensaje, Origen)
+     VALUES (@IdUsuario, GETDATE(), @Mensaje, @Origen)
+
+END
+GO
