@@ -1,193 +1,206 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using System.Net.Http;
+using System;
+using System.Collections.Generic;
+using System.Data;
 using Microsoft.Data.SqlClient;
 using Dapper;
-using System.Data;
 using ActivosAPI.Models;
 
 namespace ActivosAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    // Controlador API para gestionar mantenimientos: listar, historial, detalles, crear, editar, eliminar
     public class MantenimientoController : Controller
     {
-
+        // Inyección de configuración para leer cadena de conexión
         private readonly IConfiguration _configuration;
 
+        // Constructor: inyectar IConfiguration
         public MantenimientoController(IConfiguration configuration)
         {
             _configuration = configuration;
         }
 
+        // GET api/Mantenimiento/ListaMantenimiento
+        // Lista todos los mantenimientos activos mediante SP
         [HttpGet]
         [Route("ListaMantenimiento")]
         public IActionResult ListaMantenimiento()
         {
+            // Abrir conexión a la base de datos
+            using var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value);
+            // Ejecutar stored procedure para obtener mantenimientos
+            var result = context.Query<MantenimientoModel>(
+                "SP_ConsultarTodosMantenimientos",
+                commandType: CommandType.StoredProcedure
+            );
 
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
-            {
-                var result = context.Query<MantenimientoModel>("SP_ConsultarTodosMantenimientos",
-               commandType: CommandType.StoredProcedure);
-
-                if (result.Any())
-                {
-                    return Ok(result);
-                }
-                else
-                {
-                    return NotFound(new { Indicador = false, Mensaje = "No hay datos disponibles" });
-                }
-            }
+            // Devolver 200 OK con datos si existen, o 404 NotFound si está vacío
+            return result.Any()
+                ? Ok(result)
+                : NotFound(new { Indicador = false, Mensaje = "No hay datos disponibles" });
         }
 
+        // GET api/Mantenimiento/HistorialMantenimiento
+        // Lista historial completo de mantenimientos mediante SP
         [HttpGet]
         [Route("HistorialMantenimiento")]
         public IActionResult HistorialMantenimiento()
         {
+            // Abrir conexión a BD
+            using var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value);
+            // Ejecutar SP para historial de mantenimientos
+            var result = context.Query<MantenimientoModel>(
+                "SPP_ConsultarTodosMantenimientosHistorial",
+                commandType: CommandType.StoredProcedure
+            );
 
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
-            {
-                var result = context.Query<MantenimientoModel>("SPP_ConsultarTodosMantenimientosHistorial",
-               commandType: CommandType.StoredProcedure);
-
-                if (result.Any())
-                {
-                    return Ok(result);
-                }
-                else
-                {
-                    return NotFound(new { Indicador = false, Mensaje = "No hay datos disponibles" });
-                }
-            }
+            // Devolver OK o NotFound según el resultado
+            return result.Any()
+                ? Ok(result)
+                : NotFound(new { Indicador = false, Mensaje = "No hay datos disponibles" });
         }
 
+        // GET api/Mantenimiento/DetallesMantenimiento?idMantenimiento=1
+        // Obtiene detalle de un mantenimiento específico
         [HttpGet]
         [Route("DetallesMantenimiento")]
         public IActionResult DetallesMantenimiento([FromQuery] int idMantenimiento)
         {
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            // Abrir conexión a BD
+            using var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value);
+            // Parámetros para el SP
+            var parametros = new { idMantenimiento };
+            // Ejecutar SP para obtener un solo mantenimiento
+            var mantenimiento = context.QueryFirstOrDefault<MantenimientoModel>(
+                "SP_DetallesMantenimiento",
+                parametros,
+                commandType: CommandType.StoredProcedure
+            );
+
+            // Preparar respuesta con indicador y datos
+            var respuesta = new RespuestaModel
             {
-                var parametros = new { idMantenimiento };
+                Indicador = mantenimiento != null,
+                Mensaje = mantenimiento != null ? "Mantenimiento encontrado" : "Mantenimiento no existe",
+                Datos = mantenimiento
+            };
 
-                var Mantenimiento = context.QueryFirstOrDefault<MantenimientoModel>(
-                    "SP_DetallesMantenimiento",
-                    parametros,
-                    commandType: CommandType.StoredProcedure
-                );
-
-                var respuesta = new RespuestaModel
-                {
-                    Indicador = Mantenimiento != null,
-                    Mensaje = Mantenimiento != null ? "Mantenimiento encontrado" : "Mantenimiento no existe",
-                    Datos = Mantenimiento
-                };
-
-                return Ok(respuesta);
-            }
+            // Devolver resultado 200 OK
+            return Ok(respuesta);
         }
 
+        // POST api/Mantenimiento/AgregarMantenimiento
+        // Crea un nuevo mantenimiento
         [HttpPost]
         [Route("AgregarMantenimiento")]
-        public IActionResult AgregarMantenimiento(MantenimientoModel model)
+        public IActionResult AgregarMantenimiento([FromBody] MantenimientoModel model)
         {
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            // Abrir conexión a BD
+            using var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value);
+            // Ejecutar SP de inserción con datos del modelo
+            var result = context.Execute(
+                "sp_CrearMantenimiento",
+                new
+                {
+                    model.Detalle,
+                    model.IdUsuario,
+                    model.IdActivo
+                },
+                commandType: CommandType.StoredProcedure
+            );
+
+            // Construir respuesta según filas afectadas
+            var respuesta = new RespuestaModel
             {
-                var result = context.Execute("sp_CrearMantenimiento",
-                    new
-                    {
-                        model.Detalle,
-                        model.IdUsuario,
-                        model.IdActivo
-                    });
+                Indicador = result > 0,
+                Mensaje = result > 0
+                    ? "El Mantenimiento se ha registrado correctamente"
+                    : "El Mantenimiento no ha registrado correctamente"
+            };
 
-                var respuesta = new RespuestaModel();
-
-                if (result > 0)
-                {
-                    respuesta.Indicador = true;
-                    respuesta.Mensaje = "El Mantenimiento se ha registrado correctamente";
-                }
-                else
-                {
-                    respuesta.Indicador = false;
-                    respuesta.Mensaje = "El Mantenimiento no ha registrado correctamente";
-                }
-
-                return Ok(respuesta);
-            }
+            // Devolver 200 OK con respuesta
+            return Ok(respuesta);
         }
 
+        // PUT api/Mantenimiento/EditarMantenimiento
+        // Actualiza un mantenimiento existente
         [HttpPut]
         [Route("EditarMantenimiento")]
-        public IActionResult EditarMantenimiento(MantenimientoModel model)
+        public IActionResult EditarMantenimiento([FromBody] MantenimientoModel model)
         {
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            // Abrir conexión a BD
+            using var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value);
+            // Ejecutar SP de actualización
+            var result = context.Execute(
+                "sp_ActualizarMantenimiento",
+                new
+                {
+                    idMantenimiento = model.IdMantenimiento,
+                    detalle = model.Detalle,
+                    estado = model.Estado,
+                    fecha = model.Fecha,
+                    idResponsable = model.IdResponsable,
+                    idActivo = model.IdActivo,
+                    idUsuario = model.IdUsuario
+                },
+                commandType: CommandType.StoredProcedure
+            );
+
+            // Preparar respuesta
+            var respuesta = new RespuestaModel
             {
-                var result = context.Execute("sp_ActualizarMantenimiento",
-                    new
-                    {
-                        idMantenimiento = model.IdMantenimiento,
-                        detalle = model.Detalle,
-                        estado = model.Estado,
-                        fecha = model.Fecha,
-                        idResponsable = model.IdResponsable,
-                        idActivo = model.IdActivo,
-                        idUsuario = model.IdUsuario
-                    });
+                Indicador = result > 0,
+                Mensaje = result > 0
+                    ? "El Mantenimiento se ha actualizado correctamente"
+                    : "El Mantenimiento no se ha actualizado"
+            };
 
-                var respuesta = new RespuestaModel();
-
-                if (result > 0)
-                {
-                    respuesta.Indicador = true;
-                    respuesta.Mensaje = "El Mantenimiento se ha actualizado correctamente";
-                    return Ok(respuesta);
-                }
-                else
-                {
-                    respuesta.Indicador = false;
-                    respuesta.Mensaje = "El Mantenimiento no se ha actualizado";
-                    return StatusCode(500, respuesta);
-                }
-            }
+            // Devolver 200 OK o 500 Internal Server Error
+            return result > 0
+                ? Ok(respuesta)
+                : StatusCode(500, respuesta);
         }
 
+        // DELETE api/Mantenimiento/EliminarMantenimiento/5
+        // Elimina un mantenimiento por ID usando SP
         [HttpDelete("EliminarMantenimiento/{idMantenimiento}")]
         public IActionResult EliminarMantenimiento(int idMantenimiento)
         {
             try
             {
-                using (var connection = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+                // Abrir y abrir conexión a BD
+                using var connection = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value);
+                connection.Open();
+
+                // Parámetros dinámicos para SP
+                var parametros = new DynamicParameters();
+                parametros.Add("@idMantenimiento", idMantenimiento);
+
+                // Ejecutar SP de eliminación
+                var result = connection.Execute(
+                    "sp_EliminarMantenimiento",
+                    parametros,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                // Preparar respuesta según resultado
+                var respuesta = new RespuestaModel
                 {
-                    connection.Open();
+                    Indicador = result > 0,
+                    Mensaje = result > 0
+                        ? "El mantenimiento se ha eliminado correctamente"
+                        : "No se pudo eliminar el mantenimiento"
+                };
 
-                    var parametros = new DynamicParameters();
-                    parametros.Add("@idMantenimiento", idMantenimiento);
-
-                    var result = connection.Execute(
-                        "sp_EliminarMantenimiento",
-                        parametros,
-                        commandType: CommandType.StoredProcedure
-                    );
-                    var respuesta = new RespuestaModel();
-
-                    if (result > 0)
-                    {
-                        respuesta.Indicador = true;
-                        respuesta.Mensaje = "El mantenimiento se ha eliminado correctamente";
-                        return Ok(respuesta);
-                    }
-                    else
-                    {
-                        respuesta.Indicador = false;
-                        respuesta.Mensaje = "No se pudo eliminar el mantenimiento";
-                        return StatusCode(500, respuesta);
-                    }
-                }
+                // Devolver 200 OK o 500
+                return result > 0 ? Ok(respuesta) : StatusCode(500, respuesta);
             }
             catch (Exception ex)
             {
+                // Manejo de excepciones genericas
                 var respuesta = new RespuestaModel
                 {
                     Indicador = false,
@@ -197,44 +210,48 @@ namespace ActivosAPI.Controllers
             }
         }
 
+        // GET api/Mantenimiento/ListaMantenimientoIndividual?idMantenimiento=1
+        // Devuelve lista con un solo mantenimiento o vacía
         [HttpGet]
         [Route("ListaMantenimientoIndividual")]
         public IActionResult ListaMantenimientoIndividual([FromQuery] int idMantenimiento)
         {
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
-            {
-                var Mantenimiento = context.QueryFirstOrDefault<MantenimientoModel>(
-                    "sp_ConsultarMantenimiento",
-                    new { idMantenimiento },
-                    commandType: CommandType.StoredProcedure
-                );
-                var lista = new List<MantenimientoModel>();
-                if (Mantenimiento != null)
-                {
-                    lista.Add(Mantenimiento);
-                }
+            // Abrir conexión a BD
+            using var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value);
+            // Ejecutar SP para obtener un mantenimiento
+            var mantenimiento = context.QueryFirstOrDefault<MantenimientoModel>(
+                "sp_ConsultarMantenimiento",
+                new { idMantenimiento },
+                commandType: CommandType.StoredProcedure
+            );
 
-                return Ok(lista);
-            }
+            // Construir lista de resultados
+            var lista = mantenimiento != null
+                ? new List<MantenimientoModel> { mantenimiento }
+                : new List<MantenimientoModel>();
+
+            return Ok(lista);
         }
 
+        // GET api/Mantenimiento/ListaMantenimientoFiltro?estado=Todos&urgencia=Todos
+        // Lista mantenimientos según filtros de estado y urgencia
         [HttpGet]
         [Route("ListaMantenimientoFiltro")]
         public IActionResult ListaMantenimientoFiltro([FromQuery] string estado = "Todos", [FromQuery] string urgencia = "Todos")
         {
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
-            {
-                var result = context.Query<MantenimientoModel>("sp_ConsultarTodosMantenimientosFiltro",
-                    new { estado, urgencia },
-                    commandType: CommandType.StoredProcedure);
+            // Abrir conexión a BD
+            using var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value);
+            // Ejecutar SP con parámetros de filtro
+            var result = context.Query<MantenimientoModel>(
+                "sp_ConsultarTodosMantenimientosFiltro",
+                new { estado, urgencia },
+                commandType: CommandType.StoredProcedure
+            );
 
-                if (result.Any())
-                    return Ok(result);
-                else
-                    return NotFound(new { Indicador = false, Mensaje = "No hay datos disponibles" });
-            }
+            // Devolver OK o NotFound según existan datos
+            return result.Any()
+                ? Ok(result)
+                : NotFound(new { Indicador = false, Mensaje = "No hay datos disponibles" });
         }
-
-
     }
 }
