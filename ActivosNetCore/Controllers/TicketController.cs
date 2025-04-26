@@ -70,7 +70,7 @@ namespace ActivosNetCore.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     TempData["MensajeOk"] = "Ticket creado correctamente.";
-                    return RedirectToAction("ListaTicket", "Ticket");
+                    return RedirectToAction("AgregarTicket", "Ticket");
                 }
                 TempData["MensajeError"] = "No se pudo crear el ticket. Inténtalo de nuevo.";
                 return View();
@@ -80,16 +80,17 @@ namespace ActivosNetCore.Controllers
         [HttpGet]
         public IActionResult DetallesTicket(int idTicket)
         {
-            ViewBag.MensajeOk = TempData["MensajeOk"] as string;
-            ViewBag.MensajeError = TempData["MensajeError"] as string;
-
-
             var ticket = _utilitarios.ObtenerInfoTicket(idTicket);
-            return ticket != null
-                ? View(ticket)
-                : NotFound("Ticket no encontrado");
 
+            if (ticket == null)
+            {
+                TempData["MensajeError"] = "Ticket no encontrado";
+                return RedirectToAction("ListaTicket");
+            }
+
+            return View(ticket);
         }
+
 
 
         [HttpGet]
@@ -97,7 +98,12 @@ namespace ActivosNetCore.Controllers
         {
             var ticket = _utilitarios.ObtenerInfoTicket(idTicket);
             if (ticket?.IdTicket == null)
-                return NotFound();
+
+                if (ticket == null)
+                {
+                    TempData["MensajeError"] = "Ticket no encontrado";
+                    return RedirectToAction("ListaTicket");
+                }
 
             // 1) Obtengo la lista de soportes
             var client = _httpClient.CreateClient();
@@ -106,7 +112,7 @@ namespace ActivosNetCore.Controllers
                 ? await resp.Content.ReadFromJsonAsync<List<UsuarioModel>>()
                 : new List<UsuarioModel>();
 
-            // 2) La pongo en ViewBag usando exactamente "idUsuario" y "nombreCompleto"
+
             ViewBag.Responsables = new SelectList(
                 soportes,
                 "idUsuario", 
