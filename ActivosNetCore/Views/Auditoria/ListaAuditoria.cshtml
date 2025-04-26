@@ -1,0 +1,165 @@
+﻿@model IEnumerable<ActivosNetCore.Models.AuditoriaModel>
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Historial de Auditoría";
+}
+
+@if (TempData["MensajeOk"] != null)
+{
+    <div class="alert alert-success text-center">
+        @TempData["MensajeOk"]
+    </div>
+}
+@if (TempData["MensajeError"] != null)
+{
+    <div class="alert alert-danger text-center">
+        @TempData["MensajeError"]
+    </div>
+}
+
+<div class="content-wrap mt-3 p-3">
+    <div class="main">
+        <div class="container-fluid">
+
+            <!-- Filtros de Auditoría -->
+            <div class="card mb-4">
+                <h2>Filtros de Auditoría</h2>
+                <div class="card-body">
+                    <form id="filtrosForm" method="post">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label">Tabla</label>
+                                <select id="tablaFilter" name="Tabla" class="form-select">
+                                    <option value="">Todas</option>
+                                    <option value="Activo">Activo</option>
+                                    <option value="Usuario">Usuario</option>
+                                   
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Acción</label>
+                                <select id="accionFilter" name="Accion" class="form-select">
+                                    <option value="">Todas</option>
+                                    <option value="Insertar">Insertar</option>
+                                    <option value="Editar">Editar</option>
+                                    <option value="Eliminar">Eliminar</option>
+                                </select>
+                            </div>
+                           
+                            <div class="col-md-3">
+                                <label class="form-label">Fecha Inicio</label>
+                                <input type="date" id="fechaInicio" name="FechaInicio" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Fecha Fin</label>
+                                <input type="date" id="fechaFin" name="FechaFin" class="form-control" />
+                            </div>
+                            <div class="col-md-2 mt-4">
+                                <button type="submit" class="btn btn-primary w-100">Buscar</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Listado de Auditoría -->
+            <div class="card">
+                <h2>Historial de Auditoría</h2>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="auditoriaTable" class="table table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tabla</th>
+                                    <th>Acción</th>
+                                    <th>ID Registro</th>
+                                    <th>Usuario</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <div id="noResults" class="alert alert-warning d-none text-center mt-3">
+                            No se encontraron registros de auditoría.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            function inicializarSelect2() {
+                $('#tablaFilter, #accionFilter, #usuarioFilter').select2({
+                    width: '100%',
+                    placeholder: "Seleccione...",
+                    allowClear: true
+                });
+            }
+
+         
+
+            function cargarAuditoria(filtros) {
+                $.ajax({
+                    url: '@Url.Action("ObtenerAuditoria", "Auditoria")',
+                    type: 'POST',
+                    data: filtros,
+                    success: function (auditorias) {
+                        var $tb = $('#auditoriaTable tbody').empty();
+                        if ($.fn.DataTable.isDataTable('#auditoriaTable')) {
+                            $('#auditoriaTable').DataTable().clear().destroy();
+                        }
+
+                        if (auditorias && auditorias.length) {
+                            $('#noResults').addClass('d-none');
+                            auditorias.forEach(a => {
+                                $tb.append(`
+                                    <tr>
+                                        <td>${a.fechaAccion}</td>
+                                        <td>${a.tabla}</td>
+                                        <td>${a.accion}</td>
+                                        <td>${a.idRegistro}</td>
+                                        <td>${a.nombreUsuario}</td>
+                                    </tr>
+                                `);
+                            });
+                            $('#auditoriaTable').DataTable();
+                        } else {
+                            $('#noResults').removeClass('d-none');
+                        }
+                    },
+                    error: function () {
+                        console.error('Error al consultar auditoría');
+                    }
+                });
+            }
+
+            $('#filtrosForm').on('submit', function (e) {
+                e.preventDefault();
+
+                const filtros = {
+                    Tabla: $('#tablaFilter').val() || null,
+                    Accion: $('#accionFilter').val() || null,
+                    IdUsuarioSesion: $('#usuarioFilter').val() || null,
+                    FechaInicio: $('#fechaInicio').val() || null,
+                    FechaFin: $('#fechaFin').val() || null
+                };
+
+                cargarAuditoria(filtros);
+            });
+
+            inicializarSelect2();
+
+            // Cargar auditoría al abrir la página
+            setTimeout(function () {
+                $('#filtrosForm').trigger('submit');
+            }, 500);
+        });
+    </script>
+}

@@ -31,6 +31,15 @@
         <div class="nano">
             <div class="nano-content">
                 <ul>
+                    <div class="logo text-center mt-3">
+                        <i class="ti-user" style="font-size: 48px; color: white;"></i>
+                        <div class="mt-2">
+                            <strong>@Context.Session.GetString("Usuario")</strong> <br />
+                            <small>@Context.Session.GetString("Rol")</small>
+                        </div>
+                    </div>
+
+                    <hr>
                     <div class="logo"><a href="#"><span>Gestor Activos</span></a></div>
                     <hr>
                     @if (Context.Session.GetString("Rol") == "Administrador" || Context.Session.GetString("Rol") == "Soporte")
@@ -59,10 +68,10 @@
                         <hr>
 
                         <li class="label">Historial</li>
-                        <li><a href="#"><i class="ti-align-left"></i>Historial de Activos</a></li>
                         <li><a asp-controller="Mantenimiento" asp-action="HistorialMantenimiento"><i class="ti-align-left"></i>Historial de Mantenimiento</a></li>
+                        <li><a a asp-controller="Auditoria" asp-action="ListaAuditoria"><i class="ti-align-left"></i>Historial de Auditoría</a></li>
                         <li><a asp-controller="Ticket" asp-action="HistorialTicket"><i class="ti-align-left"></i>Historial de Ticket</a></li>
-                        <li><a href="#"><i class="ti-align-left"></i>Historial de Auditoría</a></li>
+
                         <hr>
                     }
 
