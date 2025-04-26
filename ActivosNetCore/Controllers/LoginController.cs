@@ -70,7 +70,7 @@ namespace ActivosNetCore.Controllers
                         HttpContext.Session.SetString("Rol", datosResult!.tipo!);//Rol => /Administrador/Usuario/Soporte
                         HttpContext.Session.SetString("Token", datosResult!.Token!);
 
-                        return RedirectToAction("ListaActivos", "Activos");
+                        return RedirectToAction("AgregarTicket", "Ticket");
                     }
                     else
                     {

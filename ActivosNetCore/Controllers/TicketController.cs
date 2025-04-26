@@ -25,24 +25,7 @@ namespace ActivosNetCore.Controllers
 
         }
 
-        /*[HttpGet]
-        public async Task<IActionResult>  ListaTicket(TicketModel? model)
-        {
-            using (var api = _httpClient.CreateClient())
-            {
-                var url = _configuration.GetSection("Variables:urlApi").Value + "Ticket/ListaTicket";
-                var result = await api.GetAsync(url);
-
-                if (result.IsSuccessStatusCode)
-                {
-                    var tickets = await result.Content.ReadFromJsonAsync<List<TicketModel>>();
-                    return View(tickets);
-                }
-            }
-            var ticket = new List<TicketModel>();
-            return View(ticket);
-        }*/
-
+       
         [HttpGet]
         public IActionResult AgregarTicket()
         {
