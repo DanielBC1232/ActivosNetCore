@@ -59,9 +59,6 @@ namespace ActivosNetCore.Controllers
                 {
                     var Mantenimientos = await result.Content.ReadFromJsonAsync<List<MantenimientoModel>>();
                     return View(Mantenimientos);
-                } else
-                {
-                    TempData["MensajeError"] = "No se pudo cargar el Historial de Mantenimientos";
                 }
             }
             var Mantenimiento = new List<MantenimientoModel>();
@@ -90,6 +87,7 @@ namespace ActivosNetCore.Controllers
             List<ActivosModel> activos = new();
             if (resp.IsSuccessStatusCode)
             {
+                TempData["MensajeOk"] = "Mantenimiento Solicitado";
                 activos = await resp.Content.ReadFromJsonAsync<List<ActivosModel>>()
                           ?? new List<ActivosModel>();
             }
@@ -135,7 +133,7 @@ namespace ActivosNetCore.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    TempData["MensajeOk"] = "Mantenimiento guardado correctamente";
+                    TempData["MensajeOk"] = "Mantenimiento solicitado";
                     return RedirectToAction("ListaMantenimiento");
                 }
                 else
@@ -158,14 +156,15 @@ namespace ActivosNetCore.Controllers
         [HttpGet]
         public IActionResult DetallesMantenimiento(int idMantenimiento)
         {
-            // 1) Leer mensajes previos
-            ViewBag.MensajeOk = TempData["MensajeOk"] as string;
-            ViewBag.MensajeError = TempData["MensajeError"] as string;
-
-            // 2) Obtener datos
+            // 1) Intentamos obtener el mantenimiento
             var mantenimiento = _utilitarios.ObtenerInfoMantenimiento(idMantenimiento);
             if (mantenimiento == null)
-                return NotFound("Mantenimiento no encontrado");
+            {
+                // Si no existe, guardamos el mensaje y redirigimos al listado
+                TempData["MensajeError"] = "Mantenimiento no encontrado";
+                return RedirectToAction("ListaMantenimiento");
+            }
+
 
             return View(mantenimiento);
         }
@@ -173,24 +172,27 @@ namespace ActivosNetCore.Controllers
         [HttpGet]
         public IActionResult DetallesMantenimientoHistorial(int idMantenimiento)
         {
-            var Mantenimiento = _utilitarios.ObtenerInfoMantenimiento(idMantenimiento);
-            return Mantenimiento != null
-                ? View(Mantenimiento)
-                : NotFound("Mantenimiento no encontrado");
+            // 1) Intentamos obtener el mantenimiento del historial
+            var mantenimiento = _utilitarios.ObtenerInfoMantenimiento(idMantenimiento);
+            if (mantenimiento == null)
+            {
+                TempData["MensajeError"] = "Mantenimiento no encontrado en historial";
+                return RedirectToAction("HistorialMantenimiento");
+            }
+
+            return View(mantenimiento);
         }
 
         [HttpGet]
         public async Task<IActionResult> EditarMantenimiento(int idMantenimiento)
         {
-            // 1) Leer mensajes previos de TempData
-            ViewBag.MensajeOk = TempData["MensajeOk"] as string;
-            ViewBag.MensajeError = TempData["MensajeError"] as string;
 
             // 2) Obtener detalle del mantenimiento
             var model = _utilitarios.ObtenerInfoMantenimiento(idMantenimiento);
             if (model == null)
-                return NotFound("No se encontró el mantenimiento.");
-
+            {
+                TempData["MensajeError"] = "Problemas al obtener los detalles del Mantenimiento a editar.";
+            }
             // 3) Cargar dropdown de responsables
             var soportes = await _httpClient.CreateClient()
                 .GetFromJsonAsync<List<UsuarioModel>>(
@@ -265,19 +267,19 @@ namespace ActivosNetCore.Controllers
 
                     if (result.IsSuccessStatusCode)
                     {
-                        TempData["Mensaje"] = "Mantenimiento eliminado correctamente";
+                        TempData["MensajeOk"] = "Mantenimiento eliminado correctamente";
                         return RedirectToAction("ListaMantenimiento");
                     }
                     else
                     {
-                        TempData["Error"] = "No se pudo eliminar el mantenimiento";
+                        TempData["MensajeError"] = "No se pudo eliminar el mantenimiento";
                         return RedirectToAction("DetalleMantenimiento", new { idMantenimiento = model.IdMantenimiento });
                     }
                 }
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Error al eliminar: " + ex.Message;
+                TempData["MensajeError"] = "Error al eliminar: " + ex.Message;
                 return RedirectToAction("DetalleMantenimiento", new { idMantenimiento = model.IdMantenimiento });
             }
         }

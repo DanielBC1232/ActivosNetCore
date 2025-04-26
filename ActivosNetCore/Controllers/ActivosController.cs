@@ -57,9 +57,10 @@ namespace ActivosNetCore.Controllers
 
                 if (result.IsSuccessStatusCode)
                 {
+                    TempData["MensajeOk"] = "Activo guardado";
                     return RedirectToAction("ListaActivos", "Activos");
                 }
-                ViewBag.Msj = "No se pudo completar su petición";
+                TempData["MensajeError"] = "No se pudo completar su peticion";
                 return View();
             }
         }
@@ -71,7 +72,8 @@ namespace ActivosNetCore.Controllers
 
             if (response == null)
             {
-                return NotFound("No se encontró el activo.");
+                TempData["MensajeError"] = "No se encontro el activo";
+                return RedirectToAction("ListaActivos", "Activos");
             }
 
             return View(response);
@@ -84,7 +86,8 @@ namespace ActivosNetCore.Controllers
 
             if (response == null)
             {
-                return NotFound("No se encontró el activo.");
+                TempData["MensajeError"] = "No se encontro el activo";
+                return RedirectToAction("ListaActivos", "Activos");
             }
 
             return View(response);
@@ -100,11 +103,14 @@ namespace ActivosNetCore.Controllers
                 var url = _configuration.GetSection("Variables:urlApi").Value + "Activos/EditarActivo";
                 var result = api.PutAsJsonAsync(url, model).Result;
                 if (result.IsSuccessStatusCode)
-                {
+                { 
+                    TempData["MensajeOk"] = "Activo Editado";
+                    return RedirectToAction("ListaActivos", "Activos");
+                } else {
+
+                    TempData["MensajeError"] = "Error al cargar los detalles";
                     return RedirectToAction("ListaActivos", "Activos");
                 }
-
-                return View();
             }
         }
 
@@ -119,10 +125,12 @@ namespace ActivosNetCore.Controllers
                 var result = api.PutAsJsonAsync(url, model).Result;
                 if (result.IsSuccessStatusCode)
                 {
+                    TempData["MensajeOk"] = "Activo Eliminado correctamente";
                     return RedirectToAction("ListaActivos", "Activos");
                 }
                 else
                 {
+                    TempData["MensajeError"] = "Error al eliminar el activo";
                     return RedirectToAction("ListaActivos", "Activos");
                 }
             }
